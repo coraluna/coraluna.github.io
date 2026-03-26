@@ -579,7 +579,7 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
           <div class="f-grp" id="fPhoneGrp" style="display:none"><label>Teléfono</label><input type="tel" id="fPhone" placeholder="Ej: 8888-8888"></div>
         </div>
         <div class="f-grp">
-          <label>¿Qué deseas pedir? <span style="color:var(--caramel);font-weight:800">*</span></label>
+          <label>¿Qué deseas pedir? <span style="font-size:.74rem;color:var(--text-l);font-weight:400">(o escribí tu consulta abajo)</span></label>
           <div class="f-multi-picker" id="fProductPicker">
             <!-- populated by renderProducts() -->
           </div>
@@ -891,7 +891,7 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
         </div>
 
         <div class="adm-section-title">🔑 Configuración GitHub</div>
-        <div id="ghFileProtocolWarn" style="display:none" class="adm-note" style="background:#F8D7DA;border-color:#f5c6cb;color:#721c24">
+        <div id="ghFileProtocolWarn" style="display:none;background:#F8D7DA;border:1px solid #f5c6cb;color:#721c24;border-radius:var(--r-sm);padding:10px 14px;font-size:.8rem;margin-bottom:16px;line-height:1.5">
           ⚠️ <strong>Estás en modo local (file://)</strong> — los botones de publicar no funcionarán desde aquí.<br>
           Primero subí <code>index.html</code> y <code>data.json</code> manualmente a GitHub, luego abrí <strong>coraluna.github.io</strong> y usá el panel desde ahí.
         </div>
@@ -1216,7 +1216,10 @@ function renderProducts(){
   // Populate multi-product picker
   const picker=document.getElementById("fProductPicker");
   if(picker){
-    picker.innerHTML=D.products.map(p=>{
+    if(!D.products.length){
+      picker.innerHTML=`<div style="padding:12px;font-family:'Lora',serif;font-size:.84rem;color:var(--text-l);text-align:center">Aún no hay productos disponibles</div>`;
+    }else{
+      picker.innerHTML=D.products.map(p=>{
       const isOff=p.status==="unavailable";
       const statusBadge=p.status==="limited"
         ?`<span class="f-pick-status" style="background:#FFF3CD;color:#856404">Limitado</span>`
@@ -1234,7 +1237,8 @@ function renderProducts(){
         </div>
       </label>`;
     }).join("");
-  }
+    } // close else
+  } // close if(picker)
 }
 
 function catEmoji(cat){const map={"Postres":"🍮","Platos Fuertes":"🍝","Entradas":"🥗","Bebidas":"🥤","Desayunos":"🍳","Vegetariano":"🌱","Sin Gluten":"🌾","Temporada":"🌸"};return map[cat]||"🍽";}
@@ -1401,34 +1405,38 @@ function openGalleryModal(imgSrc,emoji){
 let lastProduct="";
 function orderProduct(nameEnc){
   const name=decodeURIComponent(nameEnc);
+  if(!D.contact.whatsapp){showNotif("⚠️ WhatsApp no configurado aún");return;}
   lastProduct=name;
-  const msg=`¡Hola Cora Luna! 🥥 Me interesa pedir: *${name}*. ¿Podría darme información sobre precio y disponibilidad?`;
+  const msg=`¡Hola ${D.business.name||""}! Me interesa pedir: *${name}*. ¿Podría darme información sobre precio y disponibilidad?`;
   window.open(`https://wa.me/${D.contact.whatsapp}?text=${encodeURIComponent(msg)}`,"_blank");
-  // Pre-check in multi-picker
   const cb=document.querySelector(`#fProductPicker .f-pick-cb[data-name="${name}"]`);
   if(cb&&!cb.checked){cb.checked=true;togglePickItem(cb);}
 }
 function orderProductLimited(nameEnc){
   const name=decodeURIComponent(nameEnc);
+  if(!D.contact.whatsapp){showNotif("⚠️ WhatsApp no configurado aún");return;}
   lastProduct=name;
-  const msg=`¡Hola Cora Luna! 🥥 Me interesa *${name}* pero vi que tiene disponibilidad limitada. ¿Todavía tienen? ¿Cuándo podría pedirlo?`;
+  const msg=`¡Hola ${D.business.name||""}! Me interesa *${name}* pero vi que tiene disponibilidad limitada. ¿Todavía tienen?`;
   window.open(`https://wa.me/${D.contact.whatsapp}?text=${encodeURIComponent(msg)}`,"_blank");
 }
 function orderProductUnavail(nameEnc){
   const name=decodeURIComponent(nameEnc);
-  const msg=`¡Hola Cora Luna! 🥥 Vi que *${name}* está agotado. ¿Podrían avisarme cuando esté disponible? ¡Gracias!`;
+  if(!D.contact.whatsapp){showNotif("⚠️ WhatsApp no configurado aún");return;}
+  const msg=`¡Hola ${D.business.name||""}! Vi que *${name}* está agotado. ¿Podrían avisarme cuando esté disponible?`;
   window.open(`https://wa.me/${D.contact.whatsapp}?text=${encodeURIComponent(msg)}`,"_blank");
 }
 function openWhatsApp(type){
-  let msg="¡Hola Cora Luna! 🥥 Me gustaría hacer un pedido.";
-  if(type==="paquetes")msg="¡Hola Cora Luna! 🥥 Me gustaría consultar sobre los paquetes semanales.";
+  if(!D.contact.whatsapp){showNotif("⚠️ WhatsApp no configurado aún");return false;}
+  let msg=`¡Hola ${D.business.name||""}! Me gustaría hacer un pedido.`;
+  if(type==="paquetes")msg=`¡Hola ${D.business.name||""}! Me gustaría consultar sobre los paquetes semanales.`;
   window.open(`https://wa.me/${D.contact.whatsapp}?text=${encodeURIComponent(msg)}`,"_blank");
   return false;
 }
 function openWhatsAppFloat(){
+  if(!D.contact.whatsapp){showNotif("⚠️ WhatsApp no configurado aún");return false;}
   const msg=lastProduct
-    ?`¡Hola Cora Luna! 🥥 Quiero saber más sobre: *${lastProduct}*.`
-    :"¡Hola Cora Luna! 🥥 Me gustaría hacer un pedido.";
+    ?`¡Hola ${D.business.name||""}! Quiero saber más sobre: *${lastProduct}*.`
+    :`¡Hola ${D.business.name||""}! Me gustaría hacer un pedido.`;
   window.open(`https://wa.me/${D.contact.whatsapp}?text=${encodeURIComponent(msg)}`,"_blank");
   return false;
 }
@@ -1481,7 +1489,11 @@ async function sendFormMessage(){
     return;
   }
   if(hint)hint.style.display="none";
-
+  if(contactMethod==="wa"&&!D.contact.whatsapp){
+    showNotif("⚠️ WhatsApp no está configurado. Usá el método Correo.");
+    setContactMethod("email");
+    return;
+  }
   const prodLines=picked.map(p=>p.qty>1?`• ${p.name} (x${p.qty})`:`• ${p.name}`).join("\n");
 
   if(contactMethod==="wa"){
@@ -1506,10 +1518,16 @@ async function sendEmailW3F({name,phone,prodLines,msg,picked}){
   const emailAddr=D.contact.email||"";
 
   if(!key){
-    // Fallback: show instructions if no key configured
-    showNotif("⚠️ Configurá Web3Forms en el panel para enviar correos reales");
-    // Open admin panel on contact tab
-    openAdminWithPassword();
+    showNotif("⚠️ El correo no está configurado aún. Contactanos por WhatsApp mientras tanto.");
+    // Offer WA as fallback without disrupting the user
+    if(D.contact.whatsapp){
+      setTimeout(()=>{
+        if(confirm("¿Querés enviarnos el mensaje por WhatsApp en su lugar?")){
+          const text=["¡Hola!",`Nombre: ${name}`,prodLines?`Productos:\n${prodLines}`:"",msg?`Mensaje: ${msg}`:""].filter(Boolean).join("\n");
+          window.open(`https://wa.me/${D.contact.whatsapp}?text=${encodeURIComponent(text)}`,"_blank");
+        }
+      },400);
+    }
     return;
   }
 
