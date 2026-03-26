@@ -910,14 +910,18 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
             <input id="gh-branch" type="text" placeholder="main" autocomplete="off"></div>
           <div class="adm-fld"><label>Token de acceso personal</label>
             <div style="position:relative">
-              <input id="gh-token" type="password" placeholder="ghp_..." autocomplete="off" style="padding-right:40px">
+              <input id="gh-token" type="password" placeholder="ghp_... o github_pat_..." autocomplete="off" style="padding-right:40px">
               <button type="button" onclick="toggleGhToken()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:.9rem;color:var(--text-l)">👁</button>
+            </div>
+            <div style="font-size:.74rem;color:var(--text-l);margin-top:4px">
+              Token clásico (<code>ghp_</code>): necesita scope <code>repo</code> ·
+              Token fine-grained (<code>github_pat_</code>): necesita permiso <code>Contents: Write</code>
             </div>
           </div>
         </div>
         <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
-          <button class="btn-save" onclick="saveGhConfig()">💾 Guardar configuración</button>
-          <button class="btn-exp" onclick="verifyGhConnection()">🔍 Verificar</button>
+          <button class="btn-save" onclick="verifyGhConnection()">🔍 Verificar y Guardar</button>
+          <button class="btn-exp" onclick="saveGhConfig()">💾 Solo Guardar</button>
         </div>
         <div id="ghConfigStatus" style="font-size:.8rem;margin-bottom:16px"></div>
 
@@ -2217,21 +2221,32 @@ function showLogoHint(msg){
 function loadGhConfig(){
   try{return JSON.parse(localStorage.getItem("cl_gh")||"{}")}catch{return {}}
 }
-function saveGhConfig(){
-  const cfg={
-    user:document.getElementById("gh-user").value.trim(),
-    repo:document.getElementById("gh-repo").value.trim(),
-    branch:document.getElementById("gh-branch").value.trim()||"main",
-    token:document.getElementById("gh-token").value.trim()
+// Read config from DOM fields (live), not just localStorage
+function readGhConfigFromDOM(){
+  return {
+    user:document.getElementById("gh-user")?.value.trim()||"",
+    repo:document.getElementById("gh-repo")?.value.trim()||"",
+    branch:document.getElementById("gh-branch")?.value.trim()||"main",
+    token:document.getElementById("gh-token")?.value.trim()||""
   };
+}
+
+function saveGhConfig(){
+  const cfg=readGhConfigFromDOM();
   if(!cfg.user||!cfg.repo||!cfg.token){
-    setGhStatus("err","⚠️ Usuario, repositorio y token son obligatorios");return;
+    setGhStatus("err","⚠️ Usuario, repositorio y token son obligatorios");
+    document.getElementById("ghPublishNote").style.display="block";
+    document.getElementById("ghPublishSection").style.display="none";
+    return;
   }
+  if(!cfg.branch)cfg.branch="main";
   localStorage.setItem("cl_gh",JSON.stringify(cfg));
   const status=document.getElementById("ghConfigStatus");
-  status.textContent="✅ Configuración guardada";status.style.color="#28a745";
+  status.textContent="✅ Configuración guardada en este dispositivo";
+  status.style.color="#28a745";
   document.getElementById("ghPublishNote").style.display="none";
   document.getElementById("ghPublishSection").style.display="block";
+  setGhStatus("","Listo para publicar"); // reset any previous error
   updateSiteLink(cfg);
   showNotif("✅ Configuración de GitHub guardada");
 }
@@ -2340,44 +2355,64 @@ async function ghPushFile(cfg, filePath, content, onProgress=null){
 }
 
 async function verifyGhConnection(){
-  const cfg=loadGhConfig();
-  if(!cfg.token||!cfg.user||!cfg.repo){showNotif("⚠️ Completá la configuración primero");return;}
+  // Read from DOM fields directly — no need to save first
+  const cfg=readGhConfigFromDOM();
+  if(!cfg.token||!cfg.user||!cfg.repo){
+    showNotif("⚠️ Completá usuario, repositorio y token antes de verificar");return;
+  }
+  if(!cfg.branch)cfg.branch="main";
 
-  // Detect file:// protocol — fetch to external APIs is blocked in some browsers
   if(location.protocol==="file:"){
-    setGhStatus("err","⚠️ Estás abriendo la página como archivo local (file://). Para verificar y publicar en GitHub necesitás abrir la página desde un servidor web o subirla primero a GitHub Pages y abrirla desde ahí.");
+    setGhStatus("err","⚠️ No podés verificar desde archivo local (file://). Subí el archivo a GitHub Pages y abrí coraluna.github.io.");
     return;
   }
 
+  // Auto-show publish section so status is visible
+  document.getElementById("ghPublishNote").style.display="none";
+  document.getElementById("ghPublishSection").style.display="block";
   setGhStatus("busy","Verificando conexión con GitHub...",50);
+
   try{
     const r=await fetch(`https://api.github.com/repos/${cfg.user}/${cfg.repo}`,{
       headers:{Authorization:`Bearer ${cfg.token}`,"Accept":"application/vnd.github+json"}
     });
     if(r.status===200){
       const d=await r.json();
-      setGhStatus("ok",`✅ Conectado a ${d.full_name} (rama: ${d.default_branch})`);
+      // Auto-save if verification passes
+      if(!cfg.branch)cfg.branch=d.default_branch;
+      localStorage.setItem("cl_gh",JSON.stringify(cfg));
+      document.getElementById("ghConfigStatus").textContent="✅ Configuración guardada";
+      document.getElementById("ghConfigStatus").style.color="#28a745";
+      // Auto-fill branch
       const branchEl=document.getElementById("gh-branch");
       if(branchEl&&!branchEl.value.trim())branchEl.value=d.default_branch;
-      showNotif("✅ Conexión verificada correctamente");
+      updateSiteLink(cfg);
+      setGhStatus("ok",`✅ Conectado a ${d.full_name} — rama: ${cfg.branch}`);
+      showNotif("✅ Conexión verificada y configuración guardada");
     }
-    else if(r.status===401)setGhStatus("err","❌ Token inválido o expirado. Creá uno nuevo en GitHub Settings → Tokens.");
-    else if(r.status===404)setGhStatus("err","❌ Repositorio no encontrado. Verificá el usuario y nombre exacto.");
-    else setGhStatus("err",`❌ Error ${r.status} al conectar con GitHub`);
+    else if(r.status===401){
+      setGhStatus("err","❌ Token inválido o expirado. Los tokens clásicos (ghp_) necesitan scope 'repo'. Los fine-grained (github_pat_) necesitan permiso 'Contents: write'.");
+    }
+    else if(r.status===404){
+      setGhStatus("err",`❌ Repositorio "${cfg.user}/${cfg.repo}" no encontrado. Verificá que el nombre sea exacto y que el token tenga acceso.`);
+    }
+    else{
+      const errData=await r.json().catch(()=>({}));
+      setGhStatus("err",`❌ Error ${r.status}: ${errData.message||"respuesta inesperada de GitHub"}`);
+    }
   }catch(e){
-    if(location.protocol==="file:"){
-      setGhStatus("err","⚠️ No se puede conectar desde archivo local. Abrí la página desde coraluna.github.io para publicar.");
-    }else{
-      setGhStatus("err","❌ Error de red: "+e.message);
-    }
+    setGhStatus("err","❌ Error de red al conectar con GitHub. Verificá tu conexión a internet.");
   }
 }
 
 async function publishDataJson(){
-  const cfg=loadGhConfig();
+  // Read live config from DOM first, fall back to saved
+  const domCfg=readGhConfigFromDOM();
+  const cfg=domCfg.user&&domCfg.repo&&domCfg.token?domCfg:loadGhConfig();
   if(!cfg.token||!cfg.user||!cfg.repo){showNotif("⚠️ Configurá GitHub primero");switchToPublishTab();return;}
+  if(!cfg.branch)cfg.branch="main";
   if(location.protocol==="file:"){
-    setGhStatus("err","⚠️ No podés publicar desde archivo local. Abrí coraluna.github.io en el navegador y usá el panel desde ahí.");
+    setGhStatus("err","⚠️ No podés publicar desde archivo local. Subí primero a GitHub y abrí coraluna.github.io.");
     return;
   }
   const btn=document.getElementById("ghPublishDataBtn");
@@ -2409,10 +2444,12 @@ async function publishDataJson(){
 }
 
 async function publishIndexHtml(){
-  const cfg=loadGhConfig();
+  const domCfg=readGhConfigFromDOM();
+  const cfg=domCfg.user&&domCfg.repo&&domCfg.token?domCfg:loadGhConfig();
   if(!cfg.token||!cfg.user||!cfg.repo){showNotif("⚠️ Configurá GitHub primero");switchToPublishTab();return;}
+  if(!cfg.branch)cfg.branch="main";
   if(location.protocol==="file:"){
-    setGhStatus("err","⚠️ No podés publicar desde archivo local. Abrí coraluna.github.io en el navegador y usá el panel desde ahí.");
+    setGhStatus("err","⚠️ No podés publicar desde archivo local. Subí primero a GitHub y abrí coraluna.github.io.");
     return;
   }
   if(!confirm("¿Publicar el index.html en GitHub? Esto actualiza el diseño de la página para todos los visitantes.")){return;}
