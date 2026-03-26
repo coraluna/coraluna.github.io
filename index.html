@@ -245,6 +245,22 @@ footer{background:var(--brown-d);color:rgba(253,245,236,.75);padding:56px 28px 2
 .gh-progress{height:6px;background:var(--cream-dd);border-radius:3px;overflow:hidden;margin-top:10px}
 .gh-progress-fill{height:100%;background:var(--caramel);border-radius:3px;width:0%;transition:width .4s ease}
 code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:.82em;color:var(--caramel-d)}
+.gh-arch-box{display:flex;flex-direction:column;gap:0;margin-bottom:20px;background:var(--cream);border-radius:var(--r);border:2px solid var(--cream-dd);overflow:hidden}
+.gh-arch-item{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.gh-arch-item:first-child{border-bottom:1px solid var(--cream-dd)}
+.gh-arch-ico{font-size:20px;flex-shrink:0}
+.gh-arch-item>div{flex:1}
+.gh-arch-item strong{display:block;font-size:.88rem;color:var(--brown-d)}
+.gh-arch-item span.desc{font-size:.76rem;color:var(--text-l)}
+.gh-arch-badge{font-size:.68rem;font-weight:800;padding:3px 9px;border-radius:50px;white-space:nowrap;flex-shrink:0}
+.gh-badge-freq{background:#D4EDDA;color:#155724}
+.gh-badge-rare{background:#e2e3e5;color:#383d41}
+.gh-pub-actions{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.gh-pub-card{background:var(--cream);border:2px solid var(--cream-dd);border-radius:var(--r);padding:14px 16px}
+.gh-pub-card-head{display:flex;align-items:center;gap:7px;margin-bottom:8px;flex-wrap:wrap}
+.gh-pub-card-head strong{font-size:.88rem;color:var(--brown-d)}
+.gh-pub-card>p{font-family:'Lora',serif;font-size:.8rem;color:var(--text-m);line-height:1.55}
+@media(max-width:560px){.gh-pub-actions{grid-template-columns:1fr}}
 
 /* ── WA FLOAT ── */
 .wa-float{position:fixed;bottom:26px;right:26px;z-index:700;width:58px;height:58px;background:var(--wa);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 5px 22px rgba(37,211,102,.5);text-decoration:none;transition:all var(--tr);animation:wa-pulse 2.5s infinite}
@@ -821,13 +837,15 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
         </div>
         <div class="adm-fld"><label>Confirmar nueva contraseña</label><input id="a-pwConfirm" type="password" placeholder="Repetir nueva contraseña"></div>
         <button class="btn-save" onclick="changePassword()" style="margin-bottom:20px">🔐 Cambiar Contraseña</button>
-        <div class="adm-section-title">💾 Datos</div>
+        <div class="adm-section-title">💾 Datos y Backup</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn-exp" onclick="exportData()">💾 Exportar datos (.json)</button>
-          <label class="btn-exp" style="cursor:pointer">📂 Importar datos <input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
-          <button class="btn-exp" onclick="exportSelfContainedHTML()">🌐 Exportar HTML para github.io</button>
+          <button class="btn-exp" onclick="exportData()">💾 Exportar data.json</button>
+          <label class="btn-exp" style="cursor:pointer">📂 Importar data.json <input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
+          <button class="btn-exp" onclick="exportSelfContainedHTML()">📄 Exportar HTML standalone</button>
         </div>
-        <div class="adm-note blue" style="margin-top:12px">💡 <strong>"Exportar HTML para github.io"</strong> genera un archivo HTML con TODO el contenido integrado (incluyendo imágenes base64). Subí ese archivo a tu repositorio de GitHub y todos los visitantes verán las imágenes correctamente.</div>
+        <div class="adm-note blue" style="margin-top:12px">
+          💡 <strong>Para publicar en GitHub</strong> usá la pestaña <strong>🚀 Publicar</strong>. El botón <em>"Exportar data.json"</em> es para backup manual. El <em>"HTML standalone"</em> funciona sin servidor para pruebas locales.
+        </div>
         <div class="adm-section-title" style="margin-top:20px">⚠️ Zona de Peligro</div>
         <button class="btn-del" onclick="resetToDefault()" style="padding:10px 20px;font-size:.86rem">🗑 Restablecer todo a valores por defecto</button>
       </div>
@@ -837,44 +855,48 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
         <div class="gh-hero">
           <div class="gh-hero-ico">🚀</div>
           <h3>Publicar en coraluna.github.io</h3>
-          <p>Conectá tu repositorio de GitHub y con un solo clic tus cambios se publican para todos los visitantes. Sin subir archivos, sin comandos.</p>
+          <p>El contenido vive en <code>data.json</code> y el diseño en <code>index.html</code>. Cada actualización de productos, precios o fotos solo toca el JSON — rápido y seguro.</p>
+        </div>
+
+        <div class="gh-arch-box">
+          <div class="gh-arch-item">
+            <span class="gh-arch-ico">📊</span>
+            <div><strong>data.json</strong><span class="desc">Productos, precios, horarios, contacto — se actualiza con cada cambio</span></div>
+            <span class="gh-arch-badge gh-badge-freq">Frecuente</span>
+          </div>
+          <div class="gh-arch-item">
+            <span class="gh-arch-ico">📄</span>
+            <div><strong>index.html</strong><span class="desc">Diseño y código de la página — solo cambia con rediseños</span></div>
+            <span class="gh-arch-badge gh-badge-rare">Raro</span>
+          </div>
         </div>
 
         <div class="adm-section-title">🔑 Configuración GitHub</div>
         <div class="adm-note blue">
-          💡 <strong>Primera vez:</strong> necesitás crear un token en GitHub con permiso <code>repo</code>.
+          💡 <strong>Primera vez:</strong> creá un token con permiso <code>repo</code> en GitHub.
           <a href="https://github.com/settings/tokens/new?scopes=repo&description=CoraLuna+Admin" target="_blank" rel="noopener" class="gh-token-link">Crear token aquí ↗</a>
-          — es gratis y tarda 2 minutos.
         </div>
         <div class="adm-row">
-          <div class="adm-fld">
-            <label>Usuario de GitHub</label>
-            <input id="gh-user" type="text" placeholder="coraluna" autocomplete="off">
-          </div>
-          <div class="adm-fld">
-            <label>Repositorio</label>
-            <input id="gh-repo" type="text" placeholder="coraluna.github.io" autocomplete="off">
-          </div>
+          <div class="adm-fld"><label>Usuario de GitHub</label>
+            <input id="gh-user" type="text" placeholder="coraluna" autocomplete="off"></div>
+          <div class="adm-fld"><label>Repositorio</label>
+            <input id="gh-repo" type="text" placeholder="coraluna.github.io" autocomplete="off"></div>
         </div>
         <div class="adm-row">
-          <div class="adm-fld">
-            <label>Rama (branch)</label>
-            <input id="gh-branch" type="text" placeholder="main" autocomplete="off">
-          </div>
-          <div class="adm-fld">
-            <label>Ruta del archivo</label>
-            <input id="gh-path" type="text" placeholder="index.html" autocomplete="off">
-          </div>
-        </div>
-        <div class="adm-fld">
-          <label>Token de acceso personal <span style="color:var(--text-l);font-weight:400">(se guarda solo en este dispositivo)</span></label>
-          <div style="position:relative">
-            <input id="gh-token" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" style="padding-right:48px">
-            <button type="button" onclick="toggleGhToken()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:.9rem;color:var(--text-l)">👁</button>
+          <div class="adm-fld"><label>Rama (branch)</label>
+            <input id="gh-branch" type="text" placeholder="main" autocomplete="off"></div>
+          <div class="adm-fld"><label>Token de acceso personal</label>
+            <div style="position:relative">
+              <input id="gh-token" type="password" placeholder="ghp_..." autocomplete="off" style="padding-right:40px">
+              <button type="button" onclick="toggleGhToken()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:.9rem;color:var(--text-l)">👁</button>
+            </div>
           </div>
         </div>
-        <button class="btn-save" onclick="saveGhConfig()" style="margin-bottom:6px">💾 Guardar configuración</button>
-        <div id="ghConfigStatus" style="font-size:.8rem;color:var(--text-l);margin-bottom:18px"></div>
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
+          <button class="btn-save" onclick="saveGhConfig()">💾 Guardar configuración</button>
+          <button class="btn-exp" onclick="verifyGhConnection()">🔍 Verificar</button>
+        </div>
+        <div id="ghConfigStatus" style="font-size:.8rem;margin-bottom:16px"></div>
 
         <div class="adm-section-title">📤 Publicar</div>
         <div class="adm-note" id="ghPublishNote">Guardá la configuración arriba para habilitar la publicación.</div>
@@ -887,17 +909,27 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
               <div id="ghProgressTxt" style="font-size:.76rem;color:var(--text-l);margin-top:4px"></div>
             </div>
           </div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
-            <button class="btn-save" id="ghPublishBtn" onclick="publishToGitHub()" style="background:var(--brown-d)">
-              🚀 Guardar y Publicar en GitHub
-            </button>
-            <button class="btn-exp" onclick="verifyGhConnection()">🔍 Verificar conexión</button>
+          <div class="gh-pub-actions">
+            <div class="gh-pub-card">
+              <div class="gh-pub-card-head">📊 <strong>Publicar contenido</strong> <span class="gh-badge-freq">Uso diario</span></div>
+              <p>Actualiza <code>data.json</code> — productos, precios, horarios, fotos. Rápido (~5KB).</p>
+              <button class="btn-save" id="ghPublishDataBtn" onclick="publishDataJson()" style="width:100%;margin-top:10px">
+                🚀 Publicar data.json
+              </button>
+            </div>
+            <div class="gh-pub-card">
+              <div class="gh-pub-card-head">📄 <strong>Actualizar código</strong> <span class="gh-badge-rare">Raro</span></div>
+              <p>Sube el nuevo <code>index.html</code> — solo cuando el diseño cambió.</p>
+              <button class="btn-exp" id="ghPublishHtmlBtn" onclick="publishIndexHtml()" style="width:100%;margin-top:10px">
+                📄 Publicar index.html
+              </button>
+            </div>
           </div>
-          <div id="ghLastPublish" style="font-size:.78rem;color:var(--text-l);margin-top:10px"></div>
-          <div class="adm-note blue" style="margin-top:14px">
-            ⏱ Los cambios tardan <strong>~1 minuto</strong> en verse en
+          <div id="ghLastPublish" style="font-size:.78rem;color:var(--text-l);margin-top:12px"></div>
+          <div class="adm-note blue" style="margin-top:12px">
+            ⏱ Los cambios aparecen en
             <a id="ghSiteLink" href="https://coraluna.github.io" target="_blank" rel="noopener" style="color:var(--caramel-d);font-weight:700">coraluna.github.io ↗</a>
-            después de publicar.
+            en <strong>~1 minuto</strong>.
           </div>
         </div>
       </div>
@@ -915,30 +947,37 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
 // ═══════════════════════════════════════════════════
 //  DATA
 // ═══════════════════════════════════════════════════
+const APP_VERSION="2.0"; // bump to wipe old demo data
+if(localStorage.getItem("cl_version")!==APP_VERSION){
+  // Clear old data from previous demo versions
+  const ghCfg=localStorage.getItem("cl_gh"); // preserve GitHub config
+  const ghLast=localStorage.getItem("cl_gh_last");
+  localStorage.clear();
+  if(ghCfg)localStorage.setItem("cl_gh",ghCfg);
+  if(ghLast)localStorage.setItem("cl_gh_last",ghLast);
+  localStorage.setItem("cl_version",APP_VERSION);
+}
+
 const DAYS_ES={mon:"Lunes",tue:"Martes",wed:"Miércoles",thu:"Jueves",fri:"Viernes",sat:"Sábado",sun:"Domingo"};
 const CATS=["Postres","Platos Fuertes","Entradas","Bebidas","Desayunos","Vegetariano","Sin Gluten","Temporada","Otra"];
 const CATS_STD=CATS.slice(0,-1);
 
 const DEFAULT={
   business:{
-    name:"Cora Luna",tagline:"Flan de coco & más",
-    heroTitle:"Sabores que enamoran",
-    heroSub:"Postres artesanales y platillos caseros preparados con ingredientes frescos y el toque especial que solo el amor puede dar.",
+    name:"Mi Negocio",tagline:"",
+    heroTitle:"Bienvenidos",
+    heroSub:"",
     heroImg:"",logoImg:"",showNavIcon:true,showProdEmoji:true,
-    aboutTitle:"Cocina hecha con amor, desde el corazón",
-    aboutText:"Somos un emprendimiento familiar apasionado por la cocina casera. Cada receta lleva el sabor auténtico que tanto extrañamos, preparado con ingredientes frescos y mucho cariño.",
+    aboutTitle:"Sobre Nosotros",
+    aboutText:"",
     aboutImg:"",statsAuto:true,
-    stats:[{num:"100%",lbl:"Casero"},{num:"5+",lbl:"Productos"},{num:"❤️",lbl:"Con Amor"}],
-    values:[
-      {ico:"🥥",title:"Ingredientes Frescos",desc:"Ingredientes de calidad seleccionados con cuidado para cada preparación."},
-      {ico:"🏠",title:"Hecho en Casa",desc:"Cada plato se elabora en nuestra cocina con recetas familiares llenas de tradición."},
-      {ico:"🚚",title:"Entrega Conveniente",desc:"Coordinamos entrega o pick-up según tu conveniencia."}
-    ]
+    stats:[],
+    values:[]
   },
   contact:{
-    whatsapp:"50662550600",waDisplay:"6255-0600",
-    email:"coralunacr@gmail.com",
-    location:"Liberia, Guanacaste",locationUrl:"",
+    whatsapp:"",waDisplay:"",
+    email:"",
+    location:"",locationUrl:"",
     schedule:{
       mon:{open:true,from:"08:00",to:"18:00"},
       tue:{open:true,from:"08:00",to:"18:00"},
@@ -949,22 +988,9 @@ const DEFAULT={
       sun:{open:false,from:"",to:""}
     }
   },
-  products:[
-    {id:1,name:"Flan de Coco",cat:"Postres",desc:"Nuestro flan estrella: cremoso y suave con el delicioso sabor del coco fresco. Bañado en caramelo dorado y decorado con coco rallado.",price:"",status:"available",emoji:"🥥",img:""},
-    {id:2,name:"Flan Napolitano",cat:"Postres",desc:"El clásico flan napolitano con queso crema, leche condensada y una capa perfecta de caramelo.",price:"",status:"available",emoji:"🍮",img:""},
-    {id:3,name:"Lasagna",cat:"Platos Fuertes",desc:"Capas generosas de pasta, carne molida, salsa bolognesa casera y queso gratinado al horno.",price:"",status:"available",emoji:"🍝",img:""},
-    {id:4,name:"Canelones",cat:"Platos Fuertes",desc:"Rollos de pasta rellenos con carne, cubiertos con salsa bechamel y queso dorado.",price:"",status:"available",emoji:"🫕",img:""},
-    {id:5,name:"Pastel de Palmito",cat:"Platos Fuertes",desc:"Pastel salado relleno de palmito, pollo y vegetales, cubierto con masa dorada y crujiente.",price:"",status:"available",emoji:"🥧",img:""}
-  ],
-  packages:[
-    {id:1,name:"Paquete Familiar",ico:"🍱",desc:"Lasagna, canelones o pastel de palmito más un postre.",price:"Desde ₡15,000",detail:"4 porciones · Entrega a convenir"},
-    {id:2,name:"Solo Postres",ico:"🍮",desc:"2 flanes: uno de coco y uno napolitano.",price:"Desde ₡8,000",detail:"2 flanes medianos"},
-    {id:3,name:"Combo Semana",ico:"🌟",desc:"Plato fuerte de lunes a viernes más postre de fin de semana.",price:"Consultar",detail:"5 días · Bajo pedido"}
-  ],
-  gallery:[
-    {id:1,emoji:"🥥",img:""},{id:2,emoji:"🍮",img:""},{id:3,emoji:"🍝",img:""},
-    {id:4,emoji:"🥧",img:""},{id:5,emoji:"🫕",img:""}
-  ],
+  products:[],
+  packages:[],
+  gallery:[],
   adminPw:"Maweocasani@2026"
 };
 
@@ -973,31 +999,53 @@ function saveImg(key,data){try{localStorage.setItem("cl_img_"+key,data);return t
 function loadImg(key){try{return localStorage.getItem("cl_img_"+key)||""}catch{return ""}}
 function deleteImg(key){try{localStorage.removeItem("cl_img_"+key)}catch{}}
 
-function loadData(){
+// ── Merge remote data with local (local images + adminPw stay local) ──
+function mergeRemoteData(remote){
+  const local=loadLocalData();
+  // adminPw NEVER comes from remote (it's never in data.json)
+  remote.adminPw=local.adminPw||DEFAULT.adminPw;
+  // Restore local base64 images (they're never in data.json)
+  if(remote.products)remote.products=remote.products.map(p=>{
+    if(!p.img){const stored=loadImg("prod_"+p.id);if(stored)p.img=stored;}
+    return p;
+  });
+  if(remote.gallery)remote.gallery=remote.gallery.map(g=>{
+    if(!g.img){const stored=loadImg("gal_"+g.id);if(stored)g.img=stored;}
+    return g;
+  });
+  if(!remote.business.heroImg){const stored=loadImg("hero");if(stored)remote.business.heroImg=stored;}
+  if(!remote.business.logoImg){const stored=loadImg("logo");if(stored)remote.business.logoImg=stored;}
+  return remote;
+}
+
+function loadLocalData(){
   try{
     const s=localStorage.getItem("cl_data");
     const d=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT));
+    if(!d.adminPw||d.adminPw==="coraluna")d.adminPw=DEFAULT.adminPw;
     if(d.products)d.products=d.products.map(p=>({...p,price:p.price==="Consultar"?"":p.price}));
-    // migrate: load images from separate storage
-    if(d.products)d.products=d.products.map(p=>{
-      if(!p.img||p.img.startsWith("data:")){
-        const stored=loadImg("prod_"+p.id);
-        if(stored)p.img=stored;
-      }
-      return p;
-    });
-    if(d.gallery)d.gallery=d.gallery.map(g=>{
-      if(!g.img||g.img.startsWith("data:")){
-        const stored=loadImg("gal_"+g.id);
-        if(stored)g.img=stored;
-      }
-      return g;
-    });
     return d;
   }catch{return JSON.parse(JSON.stringify(DEFAULT))}
 }
-function saveData(d){
-  // save images separately, store "" in main data to keep it small
+
+async function loadData(){
+  // 1. Try fetching data.json from same origin (works on GitHub Pages)
+  try{
+    const res=await fetch("./data.json?t="+Date.now(),{cache:"no-store"});
+    if(res.ok){
+      const remote=await res.json();
+      // Got fresh data from GitHub — merge with local secrets/images
+      const merged=mergeRemoteData(remote);
+      // Cache it locally so it works offline too
+      saveDataLocal(merged);
+      return merged;
+    }
+  }catch{/* fetch failed (local file://, offline) — fall through */}
+  // 2. Fall back to localStorage
+  return loadLocalData();
+}
+function saveDataLocal(d){
+  // Save to localStorage — separates base64 images to avoid quota issues
   const dLite=JSON.parse(JSON.stringify(d));
   dLite.products=dLite.products.map(p=>{
     if(p.img&&p.img.startsWith("data:")){saveImg("prod_"+p.id,p.img);}
@@ -1011,14 +1059,37 @@ function saveData(d){
   if(d.business.logoImg&&d.business.logoImg.startsWith("data:")){saveImg("logo",d.business.logoImg);dLite.business.logoImg="__local__";}
   try{localStorage.setItem("cl_data",JSON.stringify(dLite))}catch(e){showNotif("⚠️ Almacenamiento lleno. Usá URLs externas para imágenes.")}
 }
+function saveData(d){saveDataLocal(d);}
+
+// Build the public data.json — NO adminPw, resolves all local images to real data
+function buildDataJson(){
+  const dCopy=JSON.parse(JSON.stringify(D));
+  // Resolve local images
+  dCopy.products=dCopy.products.map(p=>{
+    if(!p.img||p.img==="__local__")p.img=loadImg("prod_"+p.id)||"";
+    return p;
+  });
+  dCopy.gallery=dCopy.gallery.map(g=>{
+    if(!g.img||g.img==="__local__")g.img=loadImg("gal_"+g.id)||"";
+    return g;
+  });
+  if(!dCopy.business.heroImg||dCopy.business.heroImg==="__local__")dCopy.business.heroImg=loadImg("hero")||"";
+  if(!dCopy.business.logoImg||dCopy.business.logoImg==="__local__")dCopy.business.logoImg=loadImg("logo")||"";
+  // Strip sensitive/device-only fields
+  delete dCopy.adminPw;
+  return dCopy;
+}
+
 function resolveImg(val,key){
   if(!val)return "";
   if(val==="__local__")return loadImg(key)||"";
   return val;
 }
 
-let D=loadData();
-// resolve local images
+let D=JSON.parse(JSON.stringify(DEFAULT)); // temp until async load
+// resolve any __local__ images after sync load from localStorage (immediate render)
+const _localD=loadLocalData();
+D=_localD;
 D.business.heroImg=resolveImg(D.business.heroImg,"hero");
 D.business.logoImg=resolveImg(D.business.logoImg,"logo");
 D.products=D.products.map(p=>({...p,img:resolveImg(p.img,"prod_"+p.id)}));
@@ -1456,10 +1527,10 @@ function printProducts(){
 function openAdminWithPassword(){
   const pw=prompt("🔐 Contraseña:");
   if(pw===null)return;
-  if(pw===D.adminPw){
+  if(pw.trim()===D.adminPw.trim()){
     document.getElementById("admOverlay").classList.add("open");
     populateAdmin();
-    clearAiImage(); // reset AI session
+    clearAiImage();
   }else{showNotif("❌ Contraseña incorrecta")}
 }
 function closeAdmin(){document.getElementById("admOverlay").classList.remove("open")}
@@ -1749,36 +1820,21 @@ function changePassword(){
 }
 
 function exportData(){
-  const blob=new Blob([JSON.stringify(D,null,2)],{type:"application/json"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="coraluna_datos.json";
-  a.click();
-  showNotif("💾 Datos exportados");
+  // Export as data.json (the new format)
+  const json=JSON.stringify(buildDataJson(),null,2);
+  const blob=new Blob([json],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="data.json";a.click();
+  showNotif("💾 data.json exportado");
 }
-function importData(e){
-  const f=e.target.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=ev=>{try{D=JSON.parse(ev.target.result);saveData(D);renderAll();populateAdmin();showNotif("📂 Datos importados")}catch{showNotif("❌ Archivo inválido")}};
-  r.readAsText(f);
-}
-function resetToDefault(){
-  if(!confirm("¿Restablecer TODO a los valores por defecto? Se perderán todos los datos."))return;
-  localStorage.clear();D=JSON.parse(JSON.stringify(DEFAULT));saveData(D);renderAll();populateAdmin();showNotif("✅ Datos restablecidos");
-}
-
 function exportSelfContainedHTML(){
-  const dCopy=JSON.parse(JSON.stringify(D));
-  dCopy.products=dCopy.products.map(p=>{if(!p.img||p.img==="__local__")p.img=loadImg("prod_"+p.id)||"";return p;});
-  dCopy.gallery=dCopy.gallery.map(g=>{if(!g.img||g.img==="__local__")g.img=loadImg("gal_"+g.id)||"";return g;});
-  if(!dCopy.business.heroImg||dCopy.business.heroImg==="__local__")dCopy.business.heroImg=loadImg("hero")||"";
-  if(!dCopy.business.logoImg||dCopy.business.logoImg==="__local__")dCopy.business.logoImg=loadImg("logo")||"";
+  // Fallback: export a standalone HTML with data baked in (for offline/testing)
+  const dCopy=buildDataJson();
   const dataScript=`\nconst _BAKED_DATA=${JSON.stringify(dCopy)};\n`;
-  const currentHTML="<!DOCTYPE html>\n"+document.documentElement.outerHTML;
-  const modified=currentHTML.replace("let D=loadData();",dataScript+"let D=_BAKED_DATA||loadData();");
+  const html="<!DOCTYPE html>\n"+document.documentElement.outerHTML;
+  const modified=html.replace("let D=JSON.parse(JSON.stringify(DEFAULT));",dataScript+"let D=_BAKED_DATA||JSON.parse(JSON.stringify(DEFAULT));");
   const blob=new Blob([modified],{type:"text/html"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="coraluna_github.html";a.click();
-  showNotif("🌐 HTML para github.io exportado");
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="coraluna_standalone.html";a.click();
+  showNotif("💾 HTML standalone exportado");
 }
 
 // ═══════════════════════════════════════════════════
@@ -2042,144 +2098,138 @@ function saveGhConfig(){
     user:document.getElementById("gh-user").value.trim(),
     repo:document.getElementById("gh-repo").value.trim(),
     branch:document.getElementById("gh-branch").value.trim()||"main",
-    path:document.getElementById("gh-path").value.trim()||"index.html",
     token:document.getElementById("gh-token").value.trim()
   };
   if(!cfg.user||!cfg.repo||!cfg.token){
-    setGhStatus("err","⚠️ Usuario, repositorio y token son obligatorios");
-    return;
+    setGhStatus("err","⚠️ Usuario, repositorio y token son obligatorios");return;
   }
   localStorage.setItem("cl_gh",JSON.stringify(cfg));
   const status=document.getElementById("ghConfigStatus");
-  status.textContent="✅ Configuración guardada en este dispositivo";
-  status.style.color="#28a745";
+  status.textContent="✅ Configuración guardada";status.style.color="#28a745";
   document.getElementById("ghPublishNote").style.display="none";
   document.getElementById("ghPublishSection").style.display="block";
-  // Update site link
-  const siteLink=document.getElementById("ghSiteLink");
-  siteLink.href=`https://${cfg.user}.github.io/${cfg.repo!==cfg.user+'.github.io'?cfg.repo:""}`;
-  siteLink.textContent=`${cfg.user}.github.io ↗`;
+  updateSiteLink(cfg);
   showNotif("✅ Configuración de GitHub guardada");
 }
 function toggleGhToken(){
   const inp=document.getElementById("gh-token");
   inp.type=inp.type==="password"?"text":"password";
 }
+function updateSiteLink(cfg){
+  const sl=document.getElementById("ghSiteLink");if(!sl)return;
+  const url=`https://${cfg.user}.github.io${cfg.repo!==cfg.user+'.github.io'?'/'+cfg.repo:''}`;
+  sl.href=url;sl.textContent=url.replace("https://","")+" ↗";
+}
 function populateGhConfig(){
-  const cfg=loadGhConfig();
-  if(!cfg.user)return;
+  const cfg=loadGhConfig();if(!cfg.user)return;
   document.getElementById("gh-user").value=cfg.user||"";
   document.getElementById("gh-repo").value=cfg.repo||"";
   document.getElementById("gh-branch").value=cfg.branch||"main";
-  document.getElementById("gh-path").value=cfg.path||"index.html";
   document.getElementById("gh-token").value=cfg.token||"";
   if(cfg.user&&cfg.repo&&cfg.token){
     document.getElementById("ghPublishNote").style.display="none";
     document.getElementById("ghPublishSection").style.display="block";
-    const siteLink=document.getElementById("ghSiteLink");
-    siteLink.href=`https://${cfg.user}.github.io/${cfg.repo!==cfg.user+'.github.io'?cfg.repo:""}`;
-    siteLink.textContent=`${cfg.user}.github.io ↗`;
+    updateSiteLink(cfg);
     const last=localStorage.getItem("cl_gh_last");
     if(last)document.getElementById("ghLastPublish").textContent=`Última publicación: ${last}`;
   }
 }
 function setGhStatus(state,msg,pct){
-  const dot=document.getElementById("ghDot");
-  const txt=document.getElementById("ghStatusMsg");
-  const bar=document.getElementById("ghProgressBar");
-  const fill=document.getElementById("ghProgressFill");
+  const dot=document.getElementById("ghDot"),txt=document.getElementById("ghStatusMsg");
+  const bar=document.getElementById("ghProgressBar"),fill=document.getElementById("ghProgressFill");
   const ptxt=document.getElementById("ghProgressTxt");
-  if(dot){dot.className="gh-status-dot"+(state?" "+state:"");}
+  if(dot)dot.className="gh-status-dot"+(state?" "+state:"");
   if(txt)txt.textContent=msg||"";
   if(pct!==undefined&&bar&&fill){
-    bar.style.display=pct>=0?"block":"none";
-    fill.style.width=pct+"%";
-    if(ptxt)ptxt.textContent=pct<100?`${pct}%`:"Completado";
-  }
+    bar.style.display="block";fill.style.width=pct+"%";
+    if(ptxt)ptxt.textContent=pct<100?`${pct}%`:"✅ Completado";
+  }else if(pct===undefined&&bar){bar.style.display="none";}
 }
-function buildHTMLForPublish(){
-  const dCopy=JSON.parse(JSON.stringify(D));
-  dCopy.products=dCopy.products.map(p=>{if(!p.img||p.img==="__local__")p.img=loadImg("prod_"+p.id)||"";return p;});
-  dCopy.gallery=dCopy.gallery.map(g=>{if(!g.img||g.img==="__local__")g.img=loadImg("gal_"+g.id)||"";return g;});
-  if(!dCopy.business.heroImg||dCopy.business.heroImg==="__local__")dCopy.business.heroImg=loadImg("hero")||"";
-  if(!dCopy.business.logoImg||dCopy.business.logoImg==="__local__")dCopy.business.logoImg=loadImg("logo")||"";
-  const dataScript=`\nconst _BAKED_DATA=${JSON.stringify(dCopy)};\n`;
-  const html="<!DOCTYPE html>\n"+document.documentElement.outerHTML;
-  return html.replace("let D=loadData();",dataScript+"let D=_BAKED_DATA||loadData();");
+
+// ── Generic GitHub file pusher ──
+async function ghPushFile(cfg, filePath, content, mimeType="text/plain"){
+  const apiUrl=`https://api.github.com/repos/${cfg.user}/${cfg.repo}/contents/${filePath}`;
+  const headers={Authorization:`Bearer ${cfg.token}`,"Accept":"application/vnd.github+json","Content-Type":"application/json"};
+  // Get current SHA if file exists
+  let sha=null;
+  const getRes=await fetch(`${apiUrl}?ref=${cfg.branch}`,{headers});
+  if(getRes.ok){const d=await getRes.json();sha=d.sha;}
+  else if(getRes.status===401)throw new Error("Token inválido o expirado. Creá uno nuevo en GitHub.");
+  else if(getRes.status===404)sha=null; // new file
+  else throw new Error(`Error ${getRes.status} al leer ${filePath}`);
+  // Encode content
+  const encoded=btoa(unescape(encodeURIComponent(content)));
+  const now=new Date().toLocaleString("es-CR");
+  const body={message:`Cora Luna — ${filePath} — ${now}`,content:encoded,branch:cfg.branch};
+  if(sha)body.sha=sha;
+  const putRes=await fetch(apiUrl,{method:"PUT",headers,body:JSON.stringify(body)});
+  if(!putRes.ok){const err=await putRes.json();throw new Error(err.message||`Error ${putRes.status} al publicar ${filePath}`);}
+  return now;
 }
+
 async function verifyGhConnection(){
   const cfg=loadGhConfig();
   if(!cfg.token||!cfg.user||!cfg.repo){showNotif("⚠️ Completá la configuración primero");return;}
-  setGhStatus("busy","Verificando conexión con GitHub...");
+  setGhStatus("busy","Verificando conexión...");
   try{
     const r=await fetch(`https://api.github.com/repos/${cfg.user}/${cfg.repo}`,{
       headers:{Authorization:`Bearer ${cfg.token}`,"Accept":"application/vnd.github+json"}
     });
-    if(r.status===200){
-      const data=await r.json();
-      setGhStatus("ok",`✅ Conectado: ${data.full_name} (${data.default_branch})`);
-      showNotif("✅ Conexión con GitHub verificada");
-    } else if(r.status===401){
-      setGhStatus("err","❌ Token inválido o expirado. Creá uno nuevo en GitHub.");
-    } else if(r.status===404){
-      setGhStatus("err","❌ Repositorio no encontrado. Verificá el usuario y nombre del repositorio.");
-    } else {
-      setGhStatus("err",`❌ Error ${r.status} al conectar con GitHub`);
-    }
-  }catch(e){setGhStatus("err","❌ Error de red. Verificá tu conexión a internet.");}
+    if(r.status===200){const d=await r.json();setGhStatus("ok",`✅ Conectado: ${d.full_name}`);}
+    else if(r.status===401)setGhStatus("err","❌ Token inválido o expirado.");
+    else if(r.status===404)setGhStatus("err","❌ Repositorio no encontrado. Verificá usuario y nombre.");
+    else setGhStatus("err",`❌ Error ${r.status}`);
+  }catch{setGhStatus("err","❌ Error de red.");}
 }
-async function publishToGitHub(){
+
+async function publishDataJson(){
   const cfg=loadGhConfig();
-  if(!cfg.token||!cfg.user||!cfg.repo){showNotif("⚠️ Configurá GitHub primero en la pestaña 🚀 Publicar");switchToPublishTab();return;}
-  const btn=document.getElementById("ghPublishBtn");
-  btn.disabled=true;
-  setGhStatus("busy","Preparando contenido...",5);
+  if(!cfg.token||!cfg.user||!cfg.repo){showNotif("⚠️ Configurá GitHub primero");switchToPublishTab();return;}
+  const btn=document.getElementById("ghPublishDataBtn");btn.disabled=true;
+  setGhStatus("busy","Preparando data.json...",10);
   try{
-    // Step 1 — build HTML
-    setGhStatus("busy","Generando HTML con todos los datos...",15);
-    const htmlContent=buildHTMLForPublish();
-    // Step 2 — encode to base64
-    setGhStatus("busy","Codificando contenido...",30);
-    const encoded=btoa(unescape(encodeURIComponent(htmlContent)));
-    // Step 3 — get current file SHA (needed for update)
-    setGhStatus("busy","Obteniendo versión actual del archivo...",45);
-    const apiBase=`https://api.github.com/repos/${cfg.user}/${cfg.repo}/contents/${cfg.path}`;
-    const headers={Authorization:`Bearer ${cfg.token}`,"Accept":"application/vnd.github+json","Content-Type":"application/json"};
-    let sha=null;
-    const getRes=await fetch(`${apiBase}?ref=${cfg.branch}`,{headers});
-    if(getRes.ok){const d=await getRes.json();sha=d.sha;}
-    else if(getRes.status===401){throw new Error("Token inválido o expirado. Creá uno nuevo en GitHub Settings → Tokens.");}
-    else if(getRes.status===404){sha=null;} // file doesn't exist yet, will create it
-    else{throw new Error(`Error ${getRes.status} al leer el archivo`);}
-    // Step 4 — push file
-    setGhStatus("busy","Publicando en GitHub...",70);
-    const now=new Date().toLocaleString("es-CR");
-    const body={
-      message:`Actualización Cora Luna — ${now}`,
-      content:encoded,
-      branch:cfg.branch
-    };
-    if(sha)body.sha=sha;
-    const putRes=await fetch(apiBase,{method:"PUT",headers,body:JSON.stringify(body)});
-    if(!putRes.ok){
-      const err=await putRes.json();
-      throw new Error(err.message||`Error ${putRes.status} al publicar`);
-    }
-    // Step 5 — success
-    setGhStatus("busy","Verificando publicación...",90);
-    await new Promise(r=>setTimeout(r,800));
-    setGhStatus("ok","✅ ¡Publicado exitosamente! Los cambios se verán en ~1 minuto.",100);
-    const lastStr=`${now}`;
+    setGhStatus("busy","Construyendo datos...",30);
+    const data=buildDataJson();
+    const json=JSON.stringify(data,null,2);
+    const sizeKB=(json.length/1024).toFixed(1);
+    setGhStatus("busy",`Subiendo data.json (${sizeKB} KB)...`,60);
+    const now=await ghPushFile(cfg,"data.json",json);
+    setGhStatus("ok",`✅ data.json publicado (${sizeKB} KB)`,100);
+    const lastStr=`${now} — data.json`;
     localStorage.setItem("cl_gh_last",lastStr);
     document.getElementById("ghLastPublish").textContent=`Última publicación: ${lastStr}`;
-    showNotif("🚀 ¡Publicado en GitHub! Los cambios estarán en vivo en ~1 minuto.");
-  }catch(e){
-    setGhStatus("err","❌ "+e.message);
-    showNotif("❌ Error al publicar: "+e.message);
-  }finally{
-    btn.disabled=false;
-  }
+    showNotif(`🚀 data.json publicado (${sizeKB} KB). Cambios en vivo en ~1 min.`);
+  }catch(e){setGhStatus("err","❌ "+e.message);showNotif("❌ "+e.message);}
+  finally{btn.disabled=false;}
 }
+
+async function publishIndexHtml(){
+  const cfg=loadGhConfig();
+  if(!cfg.token||!cfg.user||!cfg.repo){showNotif("⚠️ Configurá GitHub primero");switchToPublishTab();return;}
+  if(!confirm("¿Publicar el index.html actual en GitHub? Esto actualiza el diseño de la página para todos los visitantes.")){return;}
+  const btn=document.getElementById("ghPublishHtmlBtn");btn.disabled=true;
+  setGhStatus("busy","Preparando index.html...",10);
+  try{
+    setGhStatus("busy","Generando código limpio...",30);
+    // Build clean index.html — no baked data, just the code
+    const cleanHtml=buildCleanIndexHtml();
+    const sizeKB=(cleanHtml.length/1024).toFixed(1);
+    setGhStatus("busy",`Subiendo index.html (${sizeKB} KB)...`,65);
+    const now=await ghPushFile(cfg,"index.html",cleanHtml);
+    setGhStatus("ok",`✅ index.html publicado (${sizeKB} KB)`,100);
+    const lastStr=`${now} — index.html`;
+    localStorage.setItem("cl_gh_last",lastStr);
+    document.getElementById("ghLastPublish").textContent=`Última publicación: ${lastStr}`;
+    showNotif(`📄 index.html actualizado (${sizeKB} KB). Diseño en vivo en ~1 min.`);
+  }catch(e){setGhStatus("err","❌ "+e.message);showNotif("❌ "+e.message);}
+  finally{btn.disabled=false;}
+}
+
+function buildCleanIndexHtml(){
+  // Build index.html with NO baked data — it loads data.json at runtime
+  return "<!DOCTYPE html>\n"+document.documentElement.outerHTML;
+}
+
 function switchToPublishTab(){
   document.querySelectorAll(".adm-tab").forEach(t=>t.classList.remove("act"));
   document.querySelectorAll(".adm-sec").forEach(s=>s.classList.remove("act"));
@@ -2190,9 +2240,9 @@ async function saveAndPublish(){
   saveAdmin();
   const cfg=loadGhConfig();
   if(cfg.user&&cfg.repo&&cfg.token){
-    await publishToGitHub();
-  } else {
-    showNotif("✅ Cambios guardados. Configurá GitHub en la pestaña 🚀 Publicar para publicar.");
+    await publishDataJson();
+  }else{
+    showNotif("✅ Cambios guardados localmente. Configurá GitHub para publicar en línea.");
     switchToPublishTab();
   }
 }
@@ -2212,8 +2262,42 @@ document.querySelectorAll(".nav-links a").forEach(a=>a.addEventListener("click",
 document.getElementById("admOverlay").addEventListener("click",e=>{if(e.target===document.getElementById("admOverlay"))closeAdmin()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeProdModal();closeAdmin()}});
 
+function importData(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const parsed=JSON.parse(ev.target.result);
+      // Preserve adminPw from local
+      parsed.adminPw=D.adminPw||DEFAULT.adminPw;
+      D=parsed;saveData(D);renderAll();populateAdmin();
+      showNotif("📂 Datos importados correctamente");
+    }catch{showNotif("❌ Archivo inválido o formato incorrecto");}
+  };
+  r.readAsText(f);
+}
+function resetToDefault(){
+  if(!confirm("¿Restablecer TODO a los valores por defecto? Se perderán todos los datos."))return;
+  localStorage.clear();D=JSON.parse(JSON.stringify(DEFAULT));saveData(D);renderAll();populateAdmin();showNotif("✅ Datos restablecidos");
+}
+
 // ── Init ──
-document.addEventListener("DOMContentLoaded",()=>{renderAll();setTimeout(initReveal,100);document.getElementById("ftYear").textContent=new Date().getFullYear();});
+document.addEventListener("DOMContentLoaded",async()=>{
+  // Render immediately with local data (instant, no flicker)
+  renderAll();
+  setTimeout(initReveal,100);
+  document.getElementById("ftYear").textContent=new Date().getFullYear();
+  // Then try to load fresh data.json from GitHub (updates in background)
+  try{
+    const fresh=await loadData();
+    const isNew=JSON.stringify(fresh)!==JSON.stringify(D);
+    if(isNew){
+      D=fresh;
+      renderAll();
+      initReveal();
+    }
+  }catch{/* stay with local data */}
+});
 </script>
 </body>
 </html>
