@@ -240,7 +240,58 @@ footer{background:var(--brown-d);color:rgba(253,245,236,.75);padding:56px 28px 2
 .pi-status-dot{width:8px;height:8px;border-radius:50%;margin-right:8px;flex-shrink:0}
 .dot-on{background:#28a745}.dot-lim{background:#ffc107}.dot-off{background:#dc3545}
 
-/* ── RESPONSIVE ── */
+/* ── AI / VISUAL ASSISTANT TAB ── */
+.ai-hero{text-align:center;padding:10px 0 22px;border-bottom:2px solid var(--cream-dd);margin-bottom:22px}
+.ai-hero-ico{font-size:48px;margin-bottom:10px;animation:float 3s ease-in-out infinite}
+.ai-hero h3{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--brown-d);margin-bottom:8px}
+.ai-hero p{font-family:'Lora',serif;font-size:.88rem;color:var(--text-m);line-height:1.65;max-width:480px;margin:0 auto}
+.ai-upload-area{border:2.5px dashed var(--caramel);border-radius:var(--r);padding:36px 20px;text-align:center;cursor:pointer;transition:all var(--tr);background:rgba(200,115,65,.04);display:flex;flex-direction:column;align-items:center;gap:14px}
+.ai-upload-area:hover,.ai-upload-area.drag{background:rgba(200,115,65,.1);border-color:var(--caramel-d);transform:translateY(-2px)}
+.ai-upload-txt strong{display:block;font-size:.96rem;font-weight:800;color:var(--brown-d);margin-bottom:5px}
+.ai-upload-txt span{font-size:.8rem;color:var(--text-l)}
+/* Editor layout */
+.aie-toolbar{display:flex;align-items:center;gap:10px;padding:10px 0 14px;border-bottom:2px solid var(--cream-dd);margin-bottom:16px;flex-wrap:wrap}
+.aie-layout{display:grid;grid-template-columns:1fr 1.4fr;gap:20px;align-items:start}
+.aie-img-col{position:sticky;top:120px}
+.aie-img-hint{text-align:center;font-size:.76rem;color:var(--text-l);margin-top:10px;font-style:italic}
+.aie-form-col{display:flex;flex-direction:column;gap:14px;max-height:72vh;overflow-y:auto;padding-right:4px}
+.aie-form-col::-webkit-scrollbar{width:4px}
+.aie-form-col::-webkit-scrollbar-thumb{background:var(--cream-dd);border-radius:2px}
+.aief-section{background:var(--cream);border-radius:var(--r);padding:14px 16px;border:1px solid var(--cream-dd)}
+.aief-title{font-weight:800;color:var(--brown-d);font-size:.9rem;margin-bottom:12px}
+.aief-row{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.aief-row:last-child{margin-bottom:0}
+.aief-row label{font-size:.76rem;font-weight:700;color:var(--text-m)}
+.aief-row input,.aief-row textarea,.aief-row select{padding:8px 10px;border:2px solid var(--cream-dd);border-radius:var(--r-sm);font-family:'Nunito',sans-serif;font-size:.84rem;color:var(--text);background:#fff;outline:none;transition:border-color var(--tr);width:100%}
+.aief-row input:focus,.aief-row textarea:focus{border-color:var(--caramel)}
+.aief-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.aie-use-img-btn{background:rgba(200,115,65,.1);border:2px solid var(--caramel);color:var(--caramel-d);padding:7px 14px;border-radius:50px;font-family:'Nunito',sans-serif;font-weight:800;font-size:.8rem;cursor:pointer;transition:all var(--tr);width:100%}
+.aie-use-img-btn:hover{background:var(--caramel);color:#fff}
+.aie-use-img-btn.used{background:#D4EDDA;border-color:#28a745;color:#155724}
+/* Product rows */
+.aie-prod-row{background:#fff;border:1px solid var(--cream-dd);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:8px;position:relative}
+.aie-prod-row:last-child{margin-bottom:0}
+.aie-prod-inputs{display:grid;grid-template-columns:1fr 80px;gap:8px;margin-bottom:8px}
+.aie-prod-inputs input{padding:7px 10px;border:2px solid var(--cream-dd);border-radius:6px;font-family:'Nunito',sans-serif;font-size:.82rem;color:var(--text);background:var(--cream);outline:none;transition:border-color var(--tr)}
+.aie-prod-inputs input:focus{border-color:var(--caramel);background:#fff}
+.aie-prod-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.aie-img-mini{width:44px;height:44px;border-radius:8px;object-fit:cover;border:2px solid var(--caramel);flex-shrink:0}
+.aie-use-for-prod{background:rgba(200,115,65,.08);border:1.5px solid var(--caramel-l);color:var(--caramel-d);padding:5px 10px;border-radius:50px;font-family:'Nunito',sans-serif;font-weight:800;font-size:.74rem;cursor:pointer;transition:all var(--tr)}
+.aie-use-for-prod:hover{background:var(--caramel);color:#fff}
+.aie-use-for-prod.used{background:#D4EDDA;border-color:#28a745;color:#155724}
+.aie-add-btn{width:100%;padding:9px;background:rgba(200,115,65,.06);border:2px dashed var(--caramel-l);border-radius:var(--r-sm);font-family:'Nunito',sans-serif;font-weight:800;color:var(--caramel-d);cursor:pointer;font-size:.84rem;transition:all var(--tr);margin-top:6px}
+.aie-add-btn:hover{background:rgba(200,115,65,.14);border-color:var(--caramel)}
+.ai-tips{padding-top:18px;border-top:2px solid var(--cream-dd)}
+.ai-tip-title{font-size:.8rem;font-weight:800;color:var(--text-l);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em}
+.ai-tip-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.ai-tip-item{display:flex;align-items:center;gap:9px;background:var(--cream);border-radius:var(--r-sm);padding:10px 12px;font-size:.82rem;color:var(--text-m);font-weight:600}
+@media(max-width:640px){
+  .aie-layout{grid-template-columns:1fr}
+  .aie-img-col{position:static}
+  .aie-form-col{max-height:none}
+  .aief-row2{grid-template-columns:1fr}
+}
+
 @media(max-width:820px){
   .nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:var(--cream);flex-direction:column;padding:18px 24px;gap:14px;border-bottom:2px solid var(--cream-dd);box-shadow:0 8px 24px var(--sh);z-index:700}
   .nav-links.open{display:flex}
@@ -461,6 +512,7 @@ footer{background:var(--brown-d);color:rgba(253,245,236,.75);padding:56px 28px 2
       <button class="adm-close" onclick="closeAdmin()">✕</button>
     </div>
     <div class="adm-tabs">
+      <button class="adm-tab" onclick="switchTab('ia',this);initAiTab()">✨ IA Mágica</button>
       <button class="adm-tab act" onclick="switchTab('negocio',this)">🏪 Negocio</button>
       <button class="adm-tab" onclick="switchTab('productos',this)">🍽 Productos</button>
       <button class="adm-tab" onclick="switchTab('paquetes',this)">📦 Paquetes</button>
@@ -468,6 +520,116 @@ footer{background:var(--brown-d);color:rgba(253,245,236,.75);padding:56px 28px 2
       <button class="adm-tab" onclick="switchTab('contacto',this)">📞 Contacto</button>
     </div>
     <div class="adm-body">
+
+      <!-- TAB IA -->
+      <div class="adm-sec" id="tab-ia">
+
+        <!-- UPLOAD STATE -->
+        <div id="aiUploadState">
+          <div class="ai-hero">
+            <div class="ai-hero-ico">🖼️</div>
+            <h3>Asistente Visual Rápido</h3>
+            <p>Subí tu flyer o foto. Vas a verla grande al lado de un formulario rápido para cargar todo en segundos — y la imagen se usa directo como foto de los productos.</p>
+          </div>
+          <div class="ai-upload-area" id="aiUploadArea"
+            onclick="document.getElementById('aiFileInput').click()"
+            ondragover="aiDragOver(event)" ondrop="aiDrop(event)">
+            <div style="font-size:52px">📲</div>
+            <div class="ai-upload-txt">
+              <strong>Tocá aquí o arrastrá tu imagen</strong>
+              <span>Flyer, foto de WhatsApp, menú impreso — cualquier imagen</span>
+            </div>
+            <input type="file" id="aiFileInput" accept="image/*" style="display:none" onchange="aiFileSelected(event)">
+          </div>
+        </div>
+
+        <!-- EDITOR STATE -->
+        <div id="aiEditorState" style="display:none">
+          <div class="aie-toolbar">
+            <span id="aieFileName" style="font-size:.8rem;color:var(--text-l);flex:1"></span>
+            <button class="btn-del" onclick="clearAiImage()">✕ Cambiar imagen</button>
+            <button class="btn-save" onclick="applyAiData()">🚀 Aplicar todo</button>
+          </div>
+          <div class="aie-layout">
+            <!-- LEFT: image -->
+            <div class="aie-img-col">
+              <img id="aieImg" style="width:100%;border-radius:12px;box-shadow:0 4px 20px var(--sh2)">
+              <div class="aie-img-hint">👆 Usá esta imagen como foto de tus productos con el botón 📷</div>
+            </div>
+            <!-- RIGHT: form -->
+            <div class="aie-form-col">
+
+              <!-- Business -->
+              <div class="aief-section">
+                <div class="aief-title">🏪 Negocio</div>
+                <div class="aief-row">
+                  <label>Nombre del negocio</label>
+                  <input id="aie-nombre" type="text" placeholder="Cora Luna">
+                </div>
+                <div class="aief-row">
+                  <label>Eslogan</label>
+                  <input id="aie-tagline" type="text" placeholder="Flan de coco & más">
+                </div>
+                <div class="aief-row">
+                  <label>Descripción principal</label>
+                  <textarea id="aie-desc" rows="2" placeholder="Postres y platillos caseros hechos con amor..."></textarea>
+                </div>
+                <div class="aief-row">
+                  <label>¿Usar esta imagen como foto principal de la página?</label>
+                  <button class="aie-use-img-btn" onclick="useImageForHero()">📷 Usar como imagen Hero</button>
+                </div>
+              </div>
+
+              <!-- Contact -->
+              <div class="aief-section">
+                <div class="aief-title">📞 Contacto</div>
+                <div class="aief-row2">
+                  <div class="aief-row">
+                    <label>WhatsApp (con código 506)</label>
+                    <input id="aie-wa" type="tel" placeholder="50662550600">
+                  </div>
+                  <div class="aief-row">
+                    <label>Mostrar como</label>
+                    <input id="aie-wadisp" type="text" placeholder="6255-0600">
+                  </div>
+                </div>
+                <div class="aief-row2">
+                  <div class="aief-row">
+                    <label>Correo electrónico</label>
+                    <input id="aie-email" type="email" placeholder="correo@ejemplo.com">
+                  </div>
+                  <div class="aief-row">
+                    <label>Ubicación</label>
+                    <input id="aie-loc" type="text" placeholder="Liberia, Guanacaste">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Products quick-add -->
+              <div class="aief-section">
+                <div class="aief-title">🍽 Productos <span style="font-size:.74rem;font-weight:400;color:var(--text-l)">— escribí lo que ves en la imagen</span></div>
+                <div id="aieProductList"></div>
+                <button class="aie-add-btn" onclick="aieAddProduct()">+ Agregar producto</button>
+              </div>
+
+            </div>
+          </div>
+          <div style="padding:14px 0 4px;display:flex;gap:10px;justify-content:flex-end">
+            <button class="btn-exp" onclick="clearAiImage()">↩ Cambiar imagen</button>
+            <button class="btn-save" onclick="applyAiData()">🚀 Aplicar todo a la Página</button>
+          </div>
+        </div>
+
+        <div class="ai-tips" id="aiTips" style="margin-top:20px">
+          <div class="ai-tip-title">💡 Tips para sacarle el máximo provecho:</div>
+          <div class="ai-tip-grid">
+            <div class="ai-tip-item">⚡<span>Cargá en segundos, sin esperar</span></div>
+            <div class="ai-tip-item">📷<span>La imagen se usa como foto de productos</span></div>
+            <div class="ai-tip-item">✏️<span>Editá solo lo que necesitás</span></div>
+            <div class="ai-tip-item">🔒<span>Todo queda en tu dispositivo</span></div>
+          </div>
+        </div>
+      </div>
 
       <!-- TAB NEGOCIO -->
       <div class="adm-sec act" id="tab-negocio">
@@ -649,7 +811,7 @@ function renderProducts(){
         <div class="p-name">${p.name}</div>
         <div class="p-desc">${p.desc}</div>
         <div class="p-foot">
-          <span class="p-price">${p.price||""}</span>
+          <span class="p-price">${p.price?p.price:'<span style="font-size:.78rem;color:var(--text-l);font-family:Lora,serif">Consultar precio</span>'}</span>
           <button class="btn-order" ${off} onclick="orderProduct('${encodeURIComponent(p.name)}')">
             <svg viewBox="0 0 24 24" fill="white" width="14" height="14"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
             Pedir
@@ -801,8 +963,13 @@ function populateAdmin(){
   renderAdminGallery();
 }
 
+const CATS=["Postres","Platos Fuertes","Entradas","Bebidas","Desayunos","Vegetariano","Sin Gluten","Temporada","Otra"];
+
 function renderAdminProducts(){
-  document.getElementById("a-prod-list").innerHTML=D.products.map((p,i)=>`
+  document.getElementById("a-prod-list").innerHTML=D.products.map((p,i)=>{
+    const hasCat=CATS.includes(p.cat);
+    const showPrice=!!(p.price&&p.price.trim());
+    return `
     <div class="adm-pi" id="api-${i}">
       <div class="adm-pi-hd" onclick="togglePI('api-${i}')">
         <span class="pi-status-dot dot-${p.status==='available'?'on':p.status==='limited'?'lim':'off'}"></span>
@@ -813,16 +980,20 @@ function renderAdminProducts(){
       <div class="adm-pi-bd" id="apib-${i}">
         <div class="adm-row">
           <div class="adm-fld"><label>Nombre</label><input type="text" id="ap-name-${i}" value="${p.name}"></div>
-          <div class="adm-fld"><label>Emoji / Ícono</label><input type="text" id="ap-ico-${i}" value="${p.emoji||""}"></div>
+          <div class="adm-fld"><label>Emoji / Ícono</label><input type="text" id="ap-ico-${i}" value="${p.emoji||"🍽"}"></div>
         </div>
         <div class="adm-row">
-          <div class="adm-fld"><label>Categoría</label><input type="text" id="ap-cat-${i}" value="${p.cat||""}"></div>
-          <div class="adm-fld"><label>Precio (ej: ₡3,500)</label><input type="text" id="ap-price-${i}" value="${p.price||""}"></div>
-        </div>
-        <div class="adm-fld"><label>Descripción</label><textarea id="ap-desc-${i}" rows="2">${p.desc}</textarea></div>
-        <div class="adm-row">
-          <div class="adm-fld"><label>URL de Foto</label><input type="url" id="ap-img-${i}" value="${p.img||""}" placeholder="https://..."></div>
-          <div class="adm-fld"><label>Disponibilidad</label>
+          <div class="adm-fld">
+            <label>Categoría</label>
+            <select id="ap-cat-${i}" onchange="toggleCatOther(${i})">
+              ${CATS.map(c=>`<option value="${c}" ${(hasCat?p.cat:p.cat||"Otra")===c?"selected":""}>${c}</option>`).join("")}
+            </select>
+            <input type="text" id="ap-cat-other-${i}" placeholder="Escribí la categoría..."
+              style="margin-top:6px;display:${(!hasCat&&p.cat)||(!hasCat&&p.cat===""&&p.cat!==undefined)?"block":"none"}"
+              value="${!hasCat&&p.cat?p.cat:""}">
+          </div>
+          <div class="adm-fld">
+            <label>Disponibilidad</label>
             <select id="ap-status-${i}">
               <option value="available" ${p.status==="available"?"selected":""}>✅ Disponible</option>
               <option value="limited" ${p.status==="limited"?"selected":""}>⚠️ Limitado</option>
@@ -830,9 +1001,35 @@ function renderAdminProducts(){
             </select>
           </div>
         </div>
+        <div class="adm-fld">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none">
+            <input type="checkbox" id="ap-showprice-${i}" ${showPrice?"checked":""}
+              onchange="togglePriceField(${i})"
+              style="width:16px;height:16px;accent-color:var(--caramel);cursor:pointer">
+            Mostrar precio en la página
+          </label>
+          <div id="ap-price-wrap-${i}" style="margin-top:8px;display:${showPrice?"block":"none"}">
+            <input type="text" id="ap-price-${i}" value="${p.price||""}" placeholder="ej: ₡3,500 · ₡6,000 por porción">
+          </div>
+        </div>
+        <div class="adm-fld"><label>Descripción</label><textarea id="ap-desc-${i}" rows="2">${p.desc}</textarea></div>
+        <div class="adm-fld"><label>URL de Foto</label><input type="url" id="ap-img-${i}" value="${p.img||""}" placeholder="https://..."></div>
       </div>
-    </div>
-  `).join("");
+    </div>`
+  }).join("");
+}
+
+function togglePriceField(i){
+  const cb=document.getElementById(`ap-showprice-${i}`);
+  const wrap=document.getElementById(`ap-price-wrap-${i}`);
+  wrap.style.display=cb.checked?"block":"none";
+  if(!cb.checked)document.getElementById(`ap-price-${i}`).value="";
+}
+
+function toggleCatOther(i){
+  const sel=document.getElementById(`ap-cat-${i}`);
+  const other=document.getElementById(`ap-cat-other-${i}`);
+  other.style.display=sel.value==="Otra"?"block":"none";
 }
 
 function renderAdminPackages(){
@@ -882,7 +1079,7 @@ function togglePI(id){
 }
 
 function addProduct(){
-  D.products.push({id:Date.now(),name:"Nuevo Producto",cat:"Producto",desc:"Descripción del producto.",price:"Consultar",status:"available",emoji:"🍽",img:""});
+  D.products.push({id:Date.now(),name:"Nuevo Producto",cat:"Postres",desc:"Descripción del producto.",price:"",status:"available",emoji:"🍽",img:""});
   renderAdminProducts();
 }
 function deleteProduct(i){if(confirm("¿Eliminar este producto?"))D.products.splice(i,1),renderAdminProducts()}
@@ -912,16 +1109,23 @@ function saveAdmin(){
     lbl:document.getElementById(`a-stat-l-${i}`)?.value||""
   }));
   // Products
-  D.products=D.products.map((_,i)=>({
-    id:D.products[i].id,
-    name:document.getElementById(`ap-name-${i}`)?.value||"",
-    cat:document.getElementById(`ap-cat-${i}`)?.value||"",
-    desc:document.getElementById(`ap-desc-${i}`)?.value||"",
-    price:document.getElementById(`ap-price-${i}`)?.value||"",
-    status:document.getElementById(`ap-status-${i}`)?.value||"available",
-    emoji:document.getElementById(`ap-ico-${i}`)?.value||"🍽",
-    img:document.getElementById(`ap-img-${i}`)?.value||""
-  }));
+  D.products=D.products.map((_,i)=>{
+    const catSel=document.getElementById(`ap-cat-${i}`)?.value||"Producto";
+    const catOther=document.getElementById(`ap-cat-other-${i}`)?.value.trim()||"";
+    const cat=catSel==="Otra"?(catOther||"Otra"):catSel;
+    const showPrice=document.getElementById(`ap-showprice-${i}`)?.checked;
+    const price=showPrice?(document.getElementById(`ap-price-${i}`)?.value.trim()||""):"";
+    return {
+      id:D.products[i].id,
+      name:document.getElementById(`ap-name-${i}`)?.value||"",
+      cat,
+      desc:document.getElementById(`ap-desc-${i}`)?.value||"",
+      price,
+      status:document.getElementById(`ap-status-${i}`)?.value||"available",
+      emoji:document.getElementById(`ap-ico-${i}`)?.value||"🍽",
+      img:document.getElementById(`ap-img-${i}`)?.value||""
+    };
+  });
   // Packages
   D.packages=D.packages.map((_,i)=>({
     id:D.packages[i].id,
@@ -1016,11 +1220,170 @@ document.getElementById("admOverlay").addEventListener("click",e=>{
   if(e.target===document.getElementById("admOverlay"))closeAdmin();
 });
 
+
+
+// ════════════════════════════════════════════
+//  VISUAL ASSISTANT — image viewer + quick fill
+// ════════════════════════════════════════════
+let aieImageDataURL = null;
+let aieProdCount = 0;
+
+function initAiTab(){}
+
+function aiDragOver(e){e.preventDefault();document.getElementById("aiUploadArea").classList.add("drag")}
+function aiDrop(e){
+  e.preventDefault();
+  document.getElementById("aiUploadArea").classList.remove("drag");
+  const f=e.dataTransfer.files[0];
+  if(f&&f.type.startsWith("image/"))processAiFile(f);
+}
+function aiFileSelected(e){const f=e.target.files[0];if(f)processAiFile(f)}
+
+function processAiFile(file){
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    aieImageDataURL=ev.target.result;
+    document.getElementById("aieImg").src=aieImageDataURL;
+    document.getElementById("aieFileName").textContent="📎 "+file.name;
+    // Pre-fill form with existing data
+    const b=D.business, c=D.contact;
+    document.getElementById("aie-nombre").value=b.name||"";
+    document.getElementById("aie-tagline").value=b.tagline||"";
+    document.getElementById("aie-desc").value=b.heroSub||"";
+    document.getElementById("aie-wa").value=c.whatsapp||"";
+    document.getElementById("aie-wadisp").value=c.waDisplay||"";
+    document.getElementById("aie-email").value=c.email||"";
+    document.getElementById("aie-loc").value=c.location||"";
+    // Seed product list with existing products
+    aieProdCount=0;
+    document.getElementById("aieProductList").innerHTML="";
+    D.products.forEach(p=>aieAddProduct(p.name,p.price,p.img));
+    // Switch to editor
+    document.getElementById("aiUploadState").style.display="none";
+    document.getElementById("aiEditorState").style.display="block";
+    document.getElementById("aiTips").style.display="none";
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearAiImage(){
+  aieImageDataURL=null; aieProdCount=0;
+  document.getElementById("aiUploadState").style.display="block";
+  document.getElementById("aiEditorState").style.display="none";
+  document.getElementById("aiTips").style.display="block";
+  document.getElementById("aiFileInput").value="";
+  document.getElementById("aieProductList").innerHTML="";
+}
+
+function aieAddProduct(name="", price="Consultar", imgSrc=""){
+  const i=aieProdCount++;
+  const id=`aie-prod-${i}`;
+  const hasImg=!!imgSrc;
+  const div=document.createElement("div");
+  div.className="aie-prod-row"; div.id=id;
+  div.innerHTML=`
+    <div class="aie-prod-inputs">
+      <input id="${id}-name" type="text" value="${esc(name)}" placeholder="Nombre del producto (ej: Flan de Coco)">
+      <input id="${id}-price" type="text" value="${esc(price)}" placeholder="Precio">
+    </div>
+    <div class="aie-prod-actions">
+      ${hasImg?`<img class="aie-img-mini" id="${id}-thumb" src="${imgSrc}">`:''}
+      <button class="aie-use-for-prod ${hasImg?'used':''}" id="${id}-imgbtn" onclick="useImageForProduct('${id}')">
+        ${hasImg?'✅ Imagen asignada':'📷 Usar imagen para este producto'}
+      </button>
+      <div style="flex:1"></div>
+      <button class="btn-del" onclick="document.getElementById('${id}').remove()">✕</button>
+    </div>`;
+  // store img data
+  div.dataset.img = imgSrc||"";
+  document.getElementById("aieProductList").appendChild(div);
+}
+
+function useImageForProduct(id){
+  if(!aieImageDataURL){showNotif("No hay imagen cargada");return}
+  const row=document.getElementById(id);
+  if(!row)return;
+  row.dataset.img=aieImageDataURL;
+  const btn=document.getElementById(id+"-imgbtn");
+  btn.textContent="✅ Imagen asignada";
+  btn.classList.add("used");
+  // show thumbnail
+  let thumb=document.getElementById(id+"-thumb");
+  if(!thumb){
+    thumb=document.createElement("img");
+    thumb.className="aie-img-mini";
+    thumb.id=id+"-thumb";
+    btn.parentNode.insertBefore(thumb,btn);
+  }
+  thumb.src=aieImageDataURL;
+  showNotif("✅ Imagen asignada al producto");
+}
+
+function useImageForHero(){
+  if(!aieImageDataURL){showNotif("No hay imagen cargada");return}
+  D.business.heroImg=aieImageDataURL;
+  const btn=document.querySelector(".aie-use-img-btn");
+  btn.textContent="✅ Imagen Hero asignada";
+  btn.classList.add("used");
+  showNotif("✅ Imagen asignada como foto principal");
+}
+
+function esc(s){return String(s||"").replace(/"/g,"&quot;").replace(/</g,"&lt;")}
+
+function applyAiData(){
+  const get=id=>{const el=document.getElementById(id);return el?el.value.trim():""}
+  let applied=[];
+
+  const nombre=get("aie-nombre"), tagline=get("aie-tagline"), desc=get("aie-desc");
+  if(nombre){D.business.name=nombre;applied.push("nombre")}
+  if(tagline){D.business.tagline=tagline;applied.push("eslogan")}
+  if(desc){D.business.heroSub=desc;applied.push("descripción")}
+
+  const wa=get("aie-wa"), wadisp=get("aie-wadisp");
+  const email=get("aie-email"), loc=get("aie-loc");
+  if(wa){D.contact.whatsapp=wa.replace(/\D/g,"");applied.push("WhatsApp")}
+  if(wadisp)D.contact.waDisplay=wadisp;
+  if(email){D.contact.email=email;applied.push("correo")}
+  if(loc){D.contact.location=loc;applied.push("ubicación")}
+
+  // Products: rebuild list from rows
+  const rows=document.querySelectorAll(".aie-prod-row");
+  let prodCount=0;
+  rows.forEach(row=>{
+    const id=row.id;
+    const name=get(id+"-name");
+    const price=get(id+"-price")||"Consultar";
+    const img=row.dataset.img||"";
+    if(!name) return;
+    const existing=D.products.findIndex(p=>p.name.toLowerCase()===name.toLowerCase());
+    if(existing>=0){
+      D.products[existing].price=price;
+      if(img)D.products[existing].img=img;
+    } else {
+      D.products.push({id:Date.now()+Math.random(),name,cat:"Producto",desc:"",price,status:"available",emoji:"🍽",img});
+      prodCount++;
+    }
+  });
+  if(prodCount>0)applied.push(`${prodCount} producto(s) nuevo(s)`);
+
+  saveData(D); renderAll(); populateAdmin(); initReveal();
+
+  // Go to negocio tab
+  document.querySelectorAll(".adm-tab").forEach(t=>t.classList.remove("act"));
+  document.querySelectorAll(".adm-sec").forEach(s=>s.classList.remove("act"));
+  document.querySelectorAll(".adm-tab").forEach(t=>{if(t.textContent.includes("Negocio"))t.classList.add("act")});
+  document.getElementById("tab-negocio").classList.add("act");
+
+  showNotif(applied.length?`✅ Aplicado: ${applied.join(", ")}. ¡Guardá los cambios!`:"⚠️ No se detectaron cambios");
+}
+
+
 // Init
 document.addEventListener("DOMContentLoaded",()=>{
   renderAll();
   setTimeout(initReveal,100);
 });
+
 </script>
 </body>
 </html>
