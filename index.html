@@ -2469,7 +2469,8 @@ async function verifyGhConnection(){
       setGhStatus("err",`❌ Error ${r.status}: ${errData.message||"respuesta inesperada de GitHub"}`);
     }
   }catch(e){
-    setGhStatus("err","❌ Error de red al conectar con GitHub. Verificá tu conexión a internet.");
+    console.error("GitHub verify error:", e);
+    setGhStatus("err","❌ "+e.message);
   }
 }
 
