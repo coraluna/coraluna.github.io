@@ -1058,8 +1058,11 @@ function loadLocalData(){
   try{
     const s=localStorage.getItem("cl_data");
     const d=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT));
-    // Ensure adminPw is always present; migration from old plaintext handled at login time
-    if(!d.adminPw)d.adminPw=DEFAULT.adminPw;
+    // Always enforce a valid hash for adminPw.
+    // If missing, empty, or still plaintext (not a 64-char hex string) → use DEFAULT hash.
+    if(!d.adminPw||!isHashed(d.adminPw)){
+      d.adminPw=DEFAULT.adminPw;
+    }
     if(d.products)d.products=d.products.map(p=>({...p,price:p.price==="Consultar"?"":p.price}));
     return d;
   }catch{return JSON.parse(JSON.stringify(DEFAULT))}
@@ -2312,9 +2315,9 @@ async function ghPushFile(cfg, filePath, content, onProgress=null){
   // Step 1 — Get latest commit SHA on branch
   prog(15,"Leyendo rama...");
   const refRes=await fetch(`${base}/git/ref/heads/${cfg.branch}`,{headers:h});
-  if(refRes.status===401)throw new Error("Token inválido o expirado. Creá uno nuevo en GitHub Settings → Tokens.");
-  if(refRes.status===404)throw new Error(`Rama "${cfg.branch}" no encontrada. Verificá el nombre en GitHub.`);
-  if(!refRes.ok)throw new Error(`Error ${refRes.status} al leer la rama`);
+  if(refRes.status===401)throw new Error("Token sin permisos de escritura. Token clásico (ghp_): necesita scope 'repo'. Token fine-grained (github_pat_): necesita permiso 'Contents → Read and Write'.");
+  if(refRes.status===404)throw new Error(`Rama "${cfg.branch}" no encontrada. Usá "Verificar y Guardar" primero para detectar la rama correcta automáticamente.`);
+  if(!refRes.ok){const e=await refRes.json().catch(()=>({}));throw new Error(`Error ${refRes.status} al leer la rama: ${e.message||""}`);}
   const refData=await refRes.json();
   const latestCommitSha=refData.object.sha;
 
@@ -2325,14 +2328,18 @@ async function ghPushFile(cfg, filePath, content, onProgress=null){
   const commitData=await commitRes.json();
   const baseTreeSha=commitData.tree.sha;
 
-  // Step 3 — Create blob with file content (no size limit)
+  // Step 3 — Create blob with file content
+  // FIX: Use TextEncoder for correct UTF-8 encoding (handles emojis, tildes, etc.)
   prog(45,"Subiendo archivo...");
-  const encoded=btoa(unescape(encodeURIComponent(content)));
+  const encoded=btoa(
+    Array.from(new TextEncoder().encode(content),b=>String.fromCharCode(b)).join("")
+  );
   const blobRes=await fetch(`${base}/git/blobs`,{
     method:"POST",headers:h,
     body:JSON.stringify({content:encoded,encoding:"base64"})
   });
-  if(!blobRes.ok)throw new Error(`Error ${blobRes.status} al crear blob`);
+  if(blobRes.status===413)throw new Error("Archivo demasiado grande para GitHub (>100MB). Usá URLs externas para las imágenes en vez de base64.");
+  if(!blobRes.ok){const e=await blobRes.json().catch(()=>({}));throw new Error(`Error ${blobRes.status} al crear blob: ${e.message||""}`);}
   const blobData=await blobRes.json();
 
   // Step 4 — Create new tree with updated file
@@ -2344,7 +2351,7 @@ async function ghPushFile(cfg, filePath, content, onProgress=null){
       tree:[{path:filePath,mode:"100644",type:"blob",sha:blobData.sha}]
     })
   });
-  if(!treeRes.ok)throw new Error(`Error ${treeRes.status} al crear árbol`);
+  if(!treeRes.ok){const e=await treeRes.json().catch(()=>({}));throw new Error(`Error ${treeRes.status} al crear árbol: ${e.message||""}`);}
   const treeData=await treeRes.json();
 
   // Step 5 — Create commit
@@ -2358,7 +2365,7 @@ async function ghPushFile(cfg, filePath, content, onProgress=null){
       parents:[latestCommitSha]
     })
   });
-  if(!newCommitRes.ok)throw new Error(`Error ${newCommitRes.status} al crear commit`);
+  if(!newCommitRes.ok){const e=await newCommitRes.json().catch(()=>({}));throw new Error(`Error ${newCommitRes.status} al crear commit: ${e.message||""}`);}
   const newCommitData=await newCommitRes.json();
 
   // Step 6 — Update branch ref
@@ -2367,25 +2374,22 @@ async function ghPushFile(cfg, filePath, content, onProgress=null){
     method:"PATCH",headers:h,
     body:JSON.stringify({sha:newCommitData.sha,force:false})
   });
-  if(!updateRes.ok)throw new Error(`Error ${updateRes.status} al actualizar la rama`);
+  if(!updateRes.ok){const e=await updateRes.json().catch(()=>({}));throw new Error(`Error ${updateRes.status} al actualizar la rama: ${e.message||""}`);}
   prog(100,"✅ Completado");
   return now;
 }
 
 async function verifyGhConnection(){
-  // Read from DOM fields directly — no need to save first
   const cfg=readGhConfigFromDOM();
   if(!cfg.token||!cfg.user||!cfg.repo){
     showNotif("⚠️ Completá usuario, repositorio y token antes de verificar");return;
   }
-  if(!cfg.branch)cfg.branch="main";
 
   if(location.protocol==="file:"){
     setGhStatus("err","⚠️ No podés verificar desde archivo local (file://). Subí el archivo a GitHub Pages y abrí coraluna.github.io.");
     return;
   }
 
-  // Auto-show publish section so status is visible
   document.getElementById("ghPublishNote").style.display="none";
   document.getElementById("ghPublishSection").style.display="block";
   setGhStatus("busy","Verificando conexión con GitHub...",50);
@@ -2396,23 +2400,22 @@ async function verifyGhConnection(){
     });
     if(r.status===200){
       const d=await r.json();
-      // Auto-save if verification passes
-      if(!cfg.branch)cfg.branch=d.default_branch;
+      // FIX: Always use default_branch from GitHub — never assume "main"
+      cfg.branch=d.default_branch;
       localStorage.setItem("cl_gh",JSON.stringify(cfg));
-      document.getElementById("ghConfigStatus").textContent="✅ Configuración guardada";
+      // Update DOM fields to reflect real values
+      document.getElementById("gh-branch").value=cfg.branch;
+      document.getElementById("ghConfigStatus").textContent=`✅ Configuración guardada — rama detectada: ${cfg.branch}`;
       document.getElementById("ghConfigStatus").style.color="#28a745";
-      // Auto-fill branch
-      const branchEl=document.getElementById("gh-branch");
-      if(branchEl&&!branchEl.value.trim())branchEl.value=d.default_branch;
       updateSiteLink(cfg);
-      setGhStatus("ok",`✅ Conectado a ${d.full_name} — rama: ${cfg.branch}`);
-      showNotif("✅ Conexión verificada y configuración guardada");
+      setGhStatus("ok",`✅ Conectado a ${d.full_name} — rama: ${cfg.branch} — listo para publicar`);
+      showNotif(`✅ Conectado. Rama detectada: ${cfg.branch}`);
     }
     else if(r.status===401){
-      setGhStatus("err","❌ Token inválido o expirado. Los tokens clásicos (ghp_) necesitan scope 'repo'. Los fine-grained (github_pat_) necesitan permiso 'Contents: write'.");
+      setGhStatus("err","❌ Token sin acceso. Token clásico (ghp_): necesita scope 'repo'. Token fine-grained (github_pat_): necesita permiso 'Contents → Read and Write' en el repositorio correcto.");
     }
     else if(r.status===404){
-      setGhStatus("err",`❌ Repositorio "${cfg.user}/${cfg.repo}" no encontrado. Verificá que el nombre sea exacto y que el token tenga acceso.`);
+      setGhStatus("err",`❌ Repositorio "${cfg.user}/${cfg.repo}" no encontrado. Verificá que el nombre sea exacto y que el token tenga acceso a él.`);
     }
     else{
       const errData=await r.json().catch(()=>({}));
