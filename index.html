@@ -1927,13 +1927,19 @@ function exportData(){
   showNotif("💾 data.json exportado");
 }
 function exportSelfContainedHTML(){
-  // Fallback: export a standalone HTML with data baked in (for offline/testing)
+  // Standalone HTML with data baked in — for testing/offline (does NOT include adminPw)
   const dCopy=buildDataJson();
   const dataScript=`\nconst _BAKED_DATA=${JSON.stringify(dCopy)};\n`;
-  const html="<!DOCTYPE html>\n"+document.documentElement.outerHTML;
-  const modified=html.replace("let D=JSON.parse(JSON.stringify(DEFAULT));",dataScript+"let D=_BAKED_DATA||JSON.parse(JSON.stringify(DEFAULT));");
+  const cleanHtml=buildCleanIndexHtml(); // uses clean DOM capture
+  const modified=cleanHtml.replace(
+    "let D=JSON.parse(JSON.stringify(DEFAULT));",
+    dataScript+"let D=_BAKED_DATA||JSON.parse(JSON.stringify(DEFAULT));"
+  );
   const blob=new Blob([modified],{type:"text/html"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="coraluna_standalone.html";a.click();
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download="coraluna_standalone.html";
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>document.body.removeChild(a),300);
   showNotif("💾 HTML standalone exportado");
 }
 
@@ -2247,11 +2253,13 @@ function setGhStatus(state,msg,pct){
 }
 
 // ── GitHub file pusher — uses Git Data API (no 1MB limit) ──
-async function ghPushFile(cfg, filePath, content){
+async function ghPushFile(cfg, filePath, content, onProgress=null){
   const h={Authorization:`Bearer ${cfg.token}`,"Accept":"application/vnd.github+json","Content-Type":"application/json"};
   const base=`https://api.github.com/repos/${cfg.user}/${cfg.repo}`;
+  const prog=(pct,msg)=>{if(onProgress)onProgress(pct,msg);};
 
   // Step 1 — Get latest commit SHA on branch
+  prog(15,"Leyendo rama...");
   const refRes=await fetch(`${base}/git/ref/heads/${cfg.branch}`,{headers:h});
   if(refRes.status===401)throw new Error("Token inválido o expirado. Creá uno nuevo en GitHub Settings → Tokens.");
   if(refRes.status===404)throw new Error(`Rama "${cfg.branch}" no encontrada. Verificá el nombre en GitHub.`);
@@ -2260,12 +2268,14 @@ async function ghPushFile(cfg, filePath, content){
   const latestCommitSha=refData.object.sha;
 
   // Step 2 — Get tree SHA of latest commit
+  prog(28,"Leyendo estado actual...");
   const commitRes=await fetch(`${base}/git/commits/${latestCommitSha}`,{headers:h});
   if(!commitRes.ok)throw new Error(`Error ${commitRes.status} al leer el commit`);
   const commitData=await commitRes.json();
   const baseTreeSha=commitData.tree.sha;
 
   // Step 3 — Create blob with file content (no size limit)
+  prog(45,"Subiendo archivo...");
   const encoded=btoa(unescape(encodeURIComponent(content)));
   const blobRes=await fetch(`${base}/git/blobs`,{
     method:"POST",headers:h,
@@ -2275,6 +2285,7 @@ async function ghPushFile(cfg, filePath, content){
   const blobData=await blobRes.json();
 
   // Step 4 — Create new tree with updated file
+  prog(60,"Preparando árbol de archivos...");
   const treeRes=await fetch(`${base}/git/trees`,{
     method:"POST",headers:h,
     body:JSON.stringify({
@@ -2286,6 +2297,7 @@ async function ghPushFile(cfg, filePath, content){
   const treeData=await treeRes.json();
 
   // Step 5 — Create commit
+  prog(75,"Creando commit...");
   const now=new Date().toLocaleString("es-CR");
   const newCommitRes=await fetch(`${base}/git/commits`,{
     method:"POST",headers:h,
@@ -2299,11 +2311,13 @@ async function ghPushFile(cfg, filePath, content){
   const newCommitData=await newCommitRes.json();
 
   // Step 6 — Update branch ref
+  prog(90,"Actualizando rama...");
   const updateRes=await fetch(`${base}/git/refs/heads/${cfg.branch}`,{
     method:"PATCH",headers:h,
     body:JSON.stringify({sha:newCommitData.sha,force:false})
   });
   if(!updateRes.ok)throw new Error(`Error ${updateRes.status} al actualizar la rama`);
+  prog(100,"✅ Completado");
   return now;
 }
 
@@ -2345,26 +2359,33 @@ async function publishDataJson(){
   const cfg=loadGhConfig();
   if(!cfg.token||!cfg.user||!cfg.repo){showNotif("⚠️ Configurá GitHub primero");switchToPublishTab();return;}
   if(location.protocol==="file:"){
-    setGhStatus("err","⚠️ No podés publicar desde un archivo local. Abrí la página desde coraluna.github.io y usá el panel desde ahí.");
+    setGhStatus("err","⚠️ No podés publicar desde archivo local. Abrí coraluna.github.io en el navegador y usá el panel desde ahí.");
     return;
   }
   const btn=document.getElementById("ghPublishDataBtn");
   const htmlBtn=document.getElementById("ghPublishHtmlBtn");
   btn.disabled=true; if(htmlBtn)htmlBtn.disabled=true;
-  setGhStatus("busy","Preparando data.json...",10);
+  setGhStatus("busy","Construyendo data.json...",5);
   try{
-    setGhStatus("busy","Construyendo datos...",30);
     const data=buildDataJson();
     const json=JSON.stringify(data,null,2);
     const sizeKB=(json.length/1024).toFixed(1);
-    setGhStatus("busy",`Subiendo data.json (${sizeKB} KB)...`,60);
-    const now=await ghPushFile(cfg,"data.json",json);
-    setGhStatus("ok",`✅ data.json publicado (${sizeKB} KB)`,100);
-    const lastStr=`${now} — data.json`;
+    const sizeMB=(json.length/1048576).toFixed(1);
+    // Warn if data.json is large (likely contains base64 images)
+    if(json.length>500*1024){
+      const proceed=confirm(`⚠️ El data.json pesa ${sizeMB} MB — probablemente tiene imágenes en base64.\n\nEsto funciona, pero carga lento para los visitantes.\n\n¿Querés continuar? Te recomendamos usar URLs externas (Imgur) para imágenes.`);
+      if(!proceed){btn.disabled=false;if(htmlBtn)htmlBtn.disabled=false;setGhStatus("","");return;}
+    }
+    setGhStatus("busy",`Subiendo data.json (${sizeKB} KB)...`,10);
+    const now=await ghPushFile(cfg,"data.json",json,(pct,msg)=>{
+      setGhStatus("busy",`${msg} — data.json (${sizeKB} KB)`,pct);
+    });
+    setGhStatus("ok",`✅ data.json publicado (${sizeKB} KB) — cambios en vivo en ~1 min`,100);
+    const lastStr=`${now} — data.json (${sizeKB} KB)`;
     localStorage.setItem("cl_gh_last",lastStr);
     document.getElementById("ghLastPublish").textContent=`Última publicación: ${lastStr}`;
-    showNotif(`🚀 data.json publicado (${sizeKB} KB). Cambios en vivo en ~1 min.`);
-    setTimeout(()=>setGhStatus("ok",`✅ Listo — ${lastStr}`),3000);
+    showNotif(`🚀 Publicado (${sizeKB} KB). Cambios en vivo en ~1 minuto.`);
+    setTimeout(()=>setGhStatus("ok",`✅ Listo — ${now}`),4000);
   }catch(e){setGhStatus("err","❌ "+e.message);showNotif("❌ "+e.message);}
   finally{btn.disabled=false; if(htmlBtn)htmlBtn.disabled=false;}
 }
@@ -2373,45 +2394,54 @@ async function publishIndexHtml(){
   const cfg=loadGhConfig();
   if(!cfg.token||!cfg.user||!cfg.repo){showNotif("⚠️ Configurá GitHub primero");switchToPublishTab();return;}
   if(location.protocol==="file:"){
-    setGhStatus("err","⚠️ No podés publicar desde un archivo local. Abrí la página desde coraluna.github.io y usá el panel desde ahí.");
+    setGhStatus("err","⚠️ No podés publicar desde archivo local. Abrí coraluna.github.io en el navegador y usá el panel desde ahí.");
     return;
   }
-  if(!confirm("¿Publicar el index.html actual en GitHub? Esto actualiza el diseño de la página para todos los visitantes.")){return;}
+  if(!confirm("¿Publicar el index.html en GitHub? Esto actualiza el diseño de la página para todos los visitantes.")){return;}
   const btn=document.getElementById("ghPublishHtmlBtn");
   const dataBtn=document.getElementById("ghPublishDataBtn");
   btn.disabled=true; if(dataBtn)dataBtn.disabled=true;
-  setGhStatus("busy","Preparando index.html...",10);
+  setGhStatus("busy","Generando index.html limpio...",5);
   try{
-    setGhStatus("busy","Generando código limpio...",30);
     const cleanHtml=buildCleanIndexHtml();
     const sizeKB=(cleanHtml.length/1024).toFixed(1);
-    setGhStatus("busy",`Subiendo index.html (${sizeKB} KB)...`,65);
-    const now=await ghPushFile(cfg,"index.html",cleanHtml);
-    setGhStatus("ok",`✅ index.html publicado (${sizeKB} KB)`,100);
-    const lastStr=`${now} — index.html`;
+    setGhStatus("busy",`Subiendo index.html (${sizeKB} KB)...`,10);
+    const now=await ghPushFile(cfg,"index.html",cleanHtml,(pct,msg)=>{
+      setGhStatus("busy",`${msg} — index.html (${sizeKB} KB)`,pct);
+    });
+    setGhStatus("ok",`✅ index.html publicado (${sizeKB} KB) — diseño en vivo en ~1 min`,100);
+    const lastStr=`${now} — index.html (${sizeKB} KB)`;
     localStorage.setItem("cl_gh_last",lastStr);
     document.getElementById("ghLastPublish").textContent=`Última publicación: ${lastStr}`;
-    showNotif(`📄 index.html actualizado (${sizeKB} KB). Diseño en vivo en ~1 min.`);
-    setTimeout(()=>setGhStatus("ok",`✅ Listo — ${lastStr}`),3000);
+    showNotif(`📄 index.html actualizado. Diseño en vivo en ~1 minuto.`);
+    setTimeout(()=>setGhStatus("ok",`✅ Listo — ${now}`),4000);
   }catch(e){setGhStatus("err","❌ "+e.message);showNotif("❌ "+e.message);}
   finally{btn.disabled=false; if(dataBtn)dataBtn.disabled=false;}
 }
 
 function buildCleanIndexHtml(){
-  // Must close admin panel state before capturing outerHTML
-  // otherwise the HTML published would have the admin panel visible to visitors
+  // Reset ALL transient UI state before capturing outerHTML
   const overlay=document.getElementById("admOverlay");
-  const wasOpen=overlay.classList.contains("open");
+  const prodModal=document.getElementById("prodModal");
+  const notif=document.getElementById("notif");
+  const logoHint=document.getElementById("logoClickHint");
+  const wasAdminOpen=overlay.classList.contains("open");
+  const wasModalOpen=prodModal.classList.contains("open");
+  const wasNotifShow=notif.classList.contains("show");
   const bodyOverflow=document.body.style.overflow;
 
-  // Temporarily close admin state
   overlay.classList.remove("open");
+  prodModal.classList.remove("open");
+  notif.classList.remove("show");
+  if(logoHint)logoHint.classList.remove("show");
   document.body.style.overflow="";
 
   const html="<!DOCTYPE html>\n"+document.documentElement.outerHTML;
 
-  // Restore admin state so the admin can keep working
-  if(wasOpen)overlay.classList.add("open");
+  // Restore so admin can keep working
+  if(wasAdminOpen)overlay.classList.add("open");
+  if(wasModalOpen)prodModal.classList.add("open");
+  if(wasNotifShow)notif.classList.add("show");
   document.body.style.overflow=bodyOverflow;
 
   return html;
