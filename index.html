@@ -891,6 +891,10 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
         </div>
 
         <div class="adm-section-title">🔑 Configuración GitHub</div>
+        <div id="ghFileProtocolWarn" style="display:none" class="adm-note" style="background:#F8D7DA;border-color:#f5c6cb;color:#721c24">
+          ⚠️ <strong>Estás en modo local (file://)</strong> — los botones de publicar no funcionarán desde aquí.<br>
+          Primero subí <code>index.html</code> y <code>data.json</code> manualmente a GitHub, luego abrí <strong>coraluna.github.io</strong> y usá el panel desde ahí.
+        </div>
         <div class="adm-note blue">
           💡 <strong>Primera vez:</strong> creá un token con permiso <code>repo</code> en GitHub.
           <a href="https://github.com/settings/tokens/new?scopes=repo&description=CoraLuna+Admin" target="_blank" rel="noopener" class="gh-token-link">Crear token aquí ↗</a>
@@ -2242,30 +2246,77 @@ function setGhStatus(state,msg,pct){
   }else if(pct===undefined&&bar){bar.style.display="none";}
 }
 
-// ── Generic GitHub file pusher ──
-async function ghPushFile(cfg, filePath, content, mimeType="text/plain"){
-  const apiUrl=`https://api.github.com/repos/${cfg.user}/${cfg.repo}/contents/${filePath}`;
-  const headers={Authorization:`Bearer ${cfg.token}`,"Accept":"application/vnd.github+json","Content-Type":"application/json"};
-  // Get current SHA if file exists
-  let sha=null;
-  const getRes=await fetch(`${apiUrl}?ref=${cfg.branch}`,{headers});
-  if(getRes.ok){const d=await getRes.json();sha=d.sha;}
-  else if(getRes.status===401)throw new Error("Token inválido o expirado. Creá uno nuevo en GitHub.");
-  else if(getRes.status===404)sha=null; // new file
-  else throw new Error(`Error ${getRes.status} al leer ${filePath}`);
-  // Encode content
+// ── GitHub file pusher — uses Git Data API (no 1MB limit) ──
+async function ghPushFile(cfg, filePath, content){
+  const h={Authorization:`Bearer ${cfg.token}`,"Accept":"application/vnd.github+json","Content-Type":"application/json"};
+  const base=`https://api.github.com/repos/${cfg.user}/${cfg.repo}`;
+
+  // Step 1 — Get latest commit SHA on branch
+  const refRes=await fetch(`${base}/git/ref/heads/${cfg.branch}`,{headers:h});
+  if(refRes.status===401)throw new Error("Token inválido o expirado. Creá uno nuevo en GitHub Settings → Tokens.");
+  if(refRes.status===404)throw new Error(`Rama "${cfg.branch}" no encontrada. Verificá el nombre en GitHub.`);
+  if(!refRes.ok)throw new Error(`Error ${refRes.status} al leer la rama`);
+  const refData=await refRes.json();
+  const latestCommitSha=refData.object.sha;
+
+  // Step 2 — Get tree SHA of latest commit
+  const commitRes=await fetch(`${base}/git/commits/${latestCommitSha}`,{headers:h});
+  if(!commitRes.ok)throw new Error(`Error ${commitRes.status} al leer el commit`);
+  const commitData=await commitRes.json();
+  const baseTreeSha=commitData.tree.sha;
+
+  // Step 3 — Create blob with file content (no size limit)
   const encoded=btoa(unescape(encodeURIComponent(content)));
+  const blobRes=await fetch(`${base}/git/blobs`,{
+    method:"POST",headers:h,
+    body:JSON.stringify({content:encoded,encoding:"base64"})
+  });
+  if(!blobRes.ok)throw new Error(`Error ${blobRes.status} al crear blob`);
+  const blobData=await blobRes.json();
+
+  // Step 4 — Create new tree with updated file
+  const treeRes=await fetch(`${base}/git/trees`,{
+    method:"POST",headers:h,
+    body:JSON.stringify({
+      base_tree:baseTreeSha,
+      tree:[{path:filePath,mode:"100644",type:"blob",sha:blobData.sha}]
+    })
+  });
+  if(!treeRes.ok)throw new Error(`Error ${treeRes.status} al crear árbol`);
+  const treeData=await treeRes.json();
+
+  // Step 5 — Create commit
   const now=new Date().toLocaleString("es-CR");
-  const body={message:`Cora Luna — ${filePath} — ${now}`,content:encoded,branch:cfg.branch};
-  if(sha)body.sha=sha;
-  const putRes=await fetch(apiUrl,{method:"PUT",headers,body:JSON.stringify(body)});
-  if(!putRes.ok){const err=await putRes.json();throw new Error(err.message||`Error ${putRes.status} al publicar ${filePath}`);}
+  const newCommitRes=await fetch(`${base}/git/commits`,{
+    method:"POST",headers:h,
+    body:JSON.stringify({
+      message:`Cora Luna — ${filePath} — ${now}`,
+      tree:treeData.sha,
+      parents:[latestCommitSha]
+    })
+  });
+  if(!newCommitRes.ok)throw new Error(`Error ${newCommitRes.status} al crear commit`);
+  const newCommitData=await newCommitRes.json();
+
+  // Step 6 — Update branch ref
+  const updateRes=await fetch(`${base}/git/refs/heads/${cfg.branch}`,{
+    method:"PATCH",headers:h,
+    body:JSON.stringify({sha:newCommitData.sha,force:false})
+  });
+  if(!updateRes.ok)throw new Error(`Error ${updateRes.status} al actualizar la rama`);
   return now;
 }
 
 async function verifyGhConnection(){
   const cfg=loadGhConfig();
   if(!cfg.token||!cfg.user||!cfg.repo){showNotif("⚠️ Completá la configuración primero");return;}
+
+  // Detect file:// protocol — fetch to external APIs is blocked in some browsers
+  if(location.protocol==="file:"){
+    setGhStatus("err","⚠️ Estás abriendo la página como archivo local (file://). Para verificar y publicar en GitHub necesitás abrir la página desde un servidor web o subirla primero a GitHub Pages y abrirla desde ahí.");
+    return;
+  }
+
   setGhStatus("busy","Verificando conexión con GitHub...",50);
   try{
     const r=await fetch(`https://api.github.com/repos/${cfg.user}/${cfg.repo}`,{
@@ -2274,20 +2325,29 @@ async function verifyGhConnection(){
     if(r.status===200){
       const d=await r.json();
       setGhStatus("ok",`✅ Conectado a ${d.full_name} (rama: ${d.default_branch})`);
-      // Auto-fill branch if empty
       const branchEl=document.getElementById("gh-branch");
       if(branchEl&&!branchEl.value.trim())branchEl.value=d.default_branch;
-      showNotif("✅ Conexión con GitHub verificada");
+      showNotif("✅ Conexión verificada correctamente");
     }
     else if(r.status===401)setGhStatus("err","❌ Token inválido o expirado. Creá uno nuevo en GitHub Settings → Tokens.");
-    else if(r.status===404)setGhStatus("err","❌ Repositorio no encontrado. Verificá el usuario y nombre exacto del repositorio.");
+    else if(r.status===404)setGhStatus("err","❌ Repositorio no encontrado. Verificá el usuario y nombre exacto.");
     else setGhStatus("err",`❌ Error ${r.status} al conectar con GitHub`);
-  }catch{setGhStatus("err","❌ Error de red. Verificá tu conexión a internet.");}
+  }catch(e){
+    if(location.protocol==="file:"){
+      setGhStatus("err","⚠️ No se puede conectar desde archivo local. Abrí la página desde coraluna.github.io para publicar.");
+    }else{
+      setGhStatus("err","❌ Error de red: "+e.message);
+    }
+  }
 }
 
 async function publishDataJson(){
   const cfg=loadGhConfig();
   if(!cfg.token||!cfg.user||!cfg.repo){showNotif("⚠️ Configurá GitHub primero");switchToPublishTab();return;}
+  if(location.protocol==="file:"){
+    setGhStatus("err","⚠️ No podés publicar desde un archivo local. Abrí la página desde coraluna.github.io y usá el panel desde ahí.");
+    return;
+  }
   const btn=document.getElementById("ghPublishDataBtn");
   const htmlBtn=document.getElementById("ghPublishHtmlBtn");
   btn.disabled=true; if(htmlBtn)htmlBtn.disabled=true;
@@ -2312,6 +2372,10 @@ async function publishDataJson(){
 async function publishIndexHtml(){
   const cfg=loadGhConfig();
   if(!cfg.token||!cfg.user||!cfg.repo){showNotif("⚠️ Configurá GitHub primero");switchToPublishTab();return;}
+  if(location.protocol==="file:"){
+    setGhStatus("err","⚠️ No podés publicar desde un archivo local. Abrí la página desde coraluna.github.io y usá el panel desde ahí.");
+    return;
+  }
   if(!confirm("¿Publicar el index.html actual en GitHub? Esto actualiza el diseño de la página para todos los visitantes.")){return;}
   const btn=document.getElementById("ghPublishHtmlBtn");
   const dataBtn=document.getElementById("ghPublishDataBtn");
@@ -2358,6 +2422,9 @@ function switchToPublishTab(){
   document.querySelectorAll(".adm-sec").forEach(s=>s.classList.remove("act"));
   document.querySelectorAll(".adm-tab").forEach(t=>{if(t.textContent.includes("Publicar"))t.classList.add("act")});
   document.getElementById("tab-publicar").classList.add("act");
+  // Show file:// warning if needed
+  const warn=document.getElementById("ghFileProtocolWarn");
+  if(warn)warn.style.display=location.protocol==="file:"?"block":"none";
 }
 async function saveAndPublish(){
   // 1. Save locally first
