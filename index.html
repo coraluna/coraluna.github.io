@@ -241,6 +241,7 @@ footer{background:var(--brown-d);color:rgba(253,245,236,.75);padding:56px 28px 2
 .gh-status-row{display:flex;align-items:center;gap:10px;font-size:.9rem;font-weight:700;color:var(--brown-d)}
 .gh-status-dot{width:10px;height:10px;border-radius:50%;background:#6c757d;flex-shrink:0;transition:background .3s}
 .gh-status-dot.ok{background:#28a745}.gh-status-dot.err{background:#dc3545}.gh-status-dot.busy{background:var(--caramel);animation:ghPulse 1s infinite}
+@keyframes dirtyPulse{0%,100%{opacity:1}50%{opacity:.55}}
 @keyframes ghPulse{0%,100%{opacity:1}50%{opacity:.4}}
 .gh-progress{height:6px;background:var(--cream-dd);border-radius:3px;overflow:hidden;margin-top:10px}
 .gh-progress-fill{height:100%;background:var(--caramel);border-radius:3px;width:0%;transition:width .4s ease}
@@ -588,7 +589,7 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
         <div class="f-grp"><label>Mensaje *</label>
           <textarea id="fMsg" rows="3" placeholder="Cuéntanos tu pedido, cantidad, fecha de entrega..."></textarea>
         </div>
-        <button class="btn-pr f-send-btn" id="fSendBtn" onclick="sendFormMessage()">📱 Enviar por WhatsApp</button>
+        <button class="btn-pr f-send-btn" id="fSendBtn" onclick="safeSendForm()">📱 Enviar por WhatsApp</button>
       </div>
     </div>
   </div>
@@ -649,6 +650,7 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
     <div class="adm-head">
       <div><h2>🛠 Panel de Administración</h2></div>
       <div class="adm-head-right">
+        <span id="admDirtyBadge" onclick="switchToPublishTab()" title="Hay cambios sin publicar — clic para ir a Publicar" style="display:none;background:#dc3545;color:#fff;font-size:.7rem;font-weight:800;padding:3px 10px;border-radius:50px;cursor:pointer;animation:dirtyPulse 2s infinite">● Sin publicar</span>
         <span class="adm-save-status" id="admSaveStatus">Cora Luna</span>
         <button class="adm-close" onclick="closeAdmin()">✕</button>
       </div>
@@ -837,7 +839,7 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
             <input id="a-w3fKey" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off">
           </div>
           <div class="adm-fld" style="display:flex;align-items:flex-end">
-            <button class="btn-exp" onclick="testW3Form()" style="width:100%">🧪 Probar envío</button>
+            <button class="btn-exp" onclick="safeTestW3F()" style="width:100%">🧪 Probar envío</button>
           </div>
         </div>
         <div id="w3fTestResult" style="font-size:.82rem;margin-top:-8px;margin-bottom:8px"></div>
@@ -855,7 +857,7 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
           <div class="adm-fld"><label>Nueva contraseña</label><input id="a-pwNew" type="password" placeholder="Nueva contraseña"></div>
         </div>
         <div class="adm-fld"><label>Confirmar nueva contraseña</label><input id="a-pwConfirm" type="password" placeholder="Repetir nueva contraseña"></div>
-        <button class="btn-save" onclick="changePassword()" style="margin-bottom:20px">🔐 Cambiar Contraseña</button>
+        <button class="btn-save" onclick="safeChangePassword()" style="margin-bottom:20px">🔐 Cambiar Contraseña</button>
         <div class="adm-section-title">💾 Datos y Backup</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn-exp" onclick="exportData()">💾 Exportar data.json</button>
@@ -920,7 +922,7 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
           </div>
         </div>
         <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
-          <button class="btn-save" onclick="verifyGhConnection()">🔍 Verificar y Guardar</button>
+          <button class="btn-save" onclick="safeVerifyGh()">🔍 Verificar y Guardar</button>
           <button class="btn-exp" onclick="saveGhConfig()">💾 Solo Guardar</button>
         </div>
         <div id="ghConfigStatus" style="font-size:.8rem;margin-bottom:16px"></div>
@@ -940,14 +942,14 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
             <div class="gh-pub-card">
               <div class="gh-pub-card-head">📊 <strong>Publicar contenido</strong> <span class="gh-badge-freq">Uso diario</span></div>
               <p>Actualiza <code>data.json</code> — productos, precios, horarios, fotos. Rápido (~5KB).</p>
-              <button class="btn-save" id="ghPublishDataBtn" onclick="publishDataJson()" style="width:100%;margin-top:10px">
+              <button class="btn-save" id="ghPublishDataBtn" onclick="safePublishData()" style="width:100%;margin-top:10px">
                 🚀 Publicar data.json
               </button>
             </div>
             <div class="gh-pub-card">
               <div class="gh-pub-card-head">📄 <strong>Actualizar código</strong> <span class="gh-badge-rare">Raro</span></div>
               <p>Sube el nuevo <code>index.html</code> — solo cuando el diseño cambió.</p>
-              <button class="btn-exp" id="ghPublishHtmlBtn" onclick="publishIndexHtml()" style="width:100%;margin-top:10px">
+              <button class="btn-exp" id="ghPublishHtmlBtn" onclick="safePublishHtml()" style="width:100%;margin-top:10px">
                 📄 Publicar index.html
               </button>
             </div>
@@ -965,7 +967,7 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
     <div class="adm-actions">
       <button class="btn-exp" onclick="printProducts()">🖨 Imprimir</button>
       <button class="btn-exp" onclick="exportSelfContainedHTML()">💾 Exportar HTML</button>
-      <button class="btn-save" onclick="saveAndPublish()">🚀 Guardar y Publicar</button>
+      <button class="btn-save" onclick="safeSaveAndPublish()">🚀 Guardar y Publicar</button>
     </div>
   </div>
 </div>
@@ -976,12 +978,14 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
 // ═══════════════════════════════════════════════════
 const APP_VERSION="2.0"; // bump to wipe old demo data
 if(localStorage.getItem("cl_version")!==APP_VERSION){
-  // Clear old data from previous demo versions
-  const ghCfg=localStorage.getItem("cl_gh"); // preserve GitHub config
+  // Clear old data but preserve device-only configs
+  const ghCfg=localStorage.getItem("cl_gh");
   const ghLast=localStorage.getItem("cl_gh_last");
+  const w3fKey=localStorage.getItem("cl_w3f");
   localStorage.clear();
   if(ghCfg)localStorage.setItem("cl_gh",ghCfg);
   if(ghLast)localStorage.setItem("cl_gh_last",ghLast);
+  if(w3fKey)localStorage.setItem("cl_w3f",w3fKey);
   localStorage.setItem("cl_version",APP_VERSION);
 }
 
@@ -1068,20 +1072,53 @@ function loadLocalData(){
   }catch{return JSON.parse(JSON.stringify(DEFAULT))}
 }
 
+// ── Dirty tracking: know if local data differs from last published ──
+let _localSavedAt=parseInt(localStorage.getItem("cl_saved_at")||"0");
+let _lastPublishedAt=parseInt(localStorage.getItem("cl_published_at")||"0");
+
+function markLocalSaved(){
+  _localSavedAt=Date.now();
+  localStorage.setItem("cl_saved_at",_localSavedAt);
+  updateDirtyIndicator();
+}
+function markPublished(){
+  _lastPublishedAt=Date.now();
+  localStorage.setItem("cl_published_at",_lastPublishedAt);
+  _localSavedAt=_lastPublishedAt; // in sync
+  localStorage.setItem("cl_saved_at",_localSavedAt);
+  updateDirtyIndicator();
+}
+function hasUnpublishedChanges(){
+  return _localSavedAt>_lastPublishedAt;
+}
+function updateDirtyIndicator(){
+  const el=document.getElementById("admDirtyBadge");
+  if(!el)return;
+  if(hasUnpublishedChanges()){
+    el.style.display="inline-flex";
+  }else{
+    el.style.display="none";
+  }
+}
+
 async function loadData(){
-  // 1. Try fetching data.json from same origin (works on GitHub Pages)
   try{
     const res=await fetch("./data.json?t="+Date.now(),{cache:"no-store"});
     if(res.ok){
       const remote=await res.json();
-      // Got fresh data from GitHub — merge with local secrets/images
+      // UX 10: Don't overwrite local changes that haven't been published yet
+      // If admin saved locally after the last publish, keep local version
+      if(hasUnpublishedChanges()){
+        // Just merge images and secrets from remote, keep local content
+        const local=loadLocalData();
+        local.adminPw=local.adminPw||DEFAULT.adminPw;
+        return local;
+      }
       const merged=mergeRemoteData(remote);
-      // Cache it locally so it works offline too
       saveDataLocal(merged);
       return merged;
     }
-  }catch{/* fetch failed (local file://, offline) — fall through */}
-  // 2. Fall back to localStorage
+  }catch{/* file:// or offline — fall through */}
   return loadLocalData();
 }
 function saveDataLocal(d){
@@ -1303,8 +1340,8 @@ function renderGallery(){
   const el=document.getElementById("galGrid");
   if(!D.gallery.length){el.innerHTML=`<p>Agrega fotos desde el panel.</p>`;return}
   el.innerHTML=D.gallery.map((g,i)=>`
-    <div class="gal-item" onclick="openGalleryModal('${g.img||""}','${g.emoji||"📸"}')">
-      ${g.img?`<img src="${g.img}" alt="Cora Luna" loading="lazy">`:`<div class="gal-ph" style="height:${i%3===0?280:180}px">${g.emoji||"📸"}</div>`}
+    <div class="gal-item" onclick="openGalleryModal(${i})">
+      ${g.img?`<img src="${g.img}" alt="Galería" loading="lazy">`:`<div class="gal-ph" style="height:${i%3===0?280:180}px">${g.emoji||"📸"}</div>`}
       <div class="gal-overlay"><span>🔍</span></div>
     </div>`).join("");
 }
@@ -1407,11 +1444,13 @@ function closeProdModal(){
   document.getElementById("prodModal").classList.remove("open");
   document.body.style.overflow="";
 }
-function openGalleryModal(imgSrc,emoji){
-  if(!imgSrc){return}
+function openGalleryModal(idx){
+  // Use index to avoid XSS from raw URL in onclick string
+  const g=D.gallery[idx];
+  if(!g||!g.img){return;}
   document.getElementById("prodModalContent").innerHTML=`
-    <button class="prod-modal-close" onclick="closeProdModal()" style="top:10px;right:10px">✕</button>
-    <img style="width:100%;max-height:85vh;object-fit:contain;border-radius:16px" src="${imgSrc}" alt="Galería">`;
+    <button class="prod-modal-close" onclick="closeProdModal()" style="top:10px;right:10px;position:absolute;z-index:10">✕</button>
+    <img style="width:100%;max-height:85vh;object-fit:contain;border-radius:16px" src="${g.img.replace(/"/g,'&quot;')}" alt="Galería Cora Luna">`;
   document.getElementById("prodModal").classList.add("open");
   document.body.style.overflow="hidden";
 }
@@ -1420,11 +1459,12 @@ function openGalleryModal(imgSrc,emoji){
 //  ACTIONS
 // ═══════════════════════════════════════════════════
 let lastProduct="";
+function _bizName(){return D.business.name||"nosotros";}
 function orderProduct(nameEnc){
   const name=decodeURIComponent(nameEnc);
   if(!D.contact.whatsapp){showNotif("⚠️ WhatsApp no configurado aún");return;}
   lastProduct=name;
-  const msg=`¡Hola ${D.business.name||""}! Me interesa pedir: *${name}*. ¿Podría darme información sobre precio y disponibilidad?`;
+  const msg=`¡Hola ${_bizName()}! Me interesa pedir: *${name}*. ¿Podría darme información sobre precio y disponibilidad?`;
   window.open(`https://wa.me/${D.contact.whatsapp}?text=${encodeURIComponent(msg)}`,"_blank");
   const cb=document.querySelector(`#fProductPicker .f-pick-cb[data-name="${name}"]`);
   if(cb&&!cb.checked){cb.checked=true;togglePickItem(cb);}
@@ -1433,27 +1473,27 @@ function orderProductLimited(nameEnc){
   const name=decodeURIComponent(nameEnc);
   if(!D.contact.whatsapp){showNotif("⚠️ WhatsApp no configurado aún");return;}
   lastProduct=name;
-  const msg=`¡Hola ${D.business.name||""}! Me interesa *${name}* pero vi que tiene disponibilidad limitada. ¿Todavía tienen?`;
+  const msg=`¡Hola ${_bizName()}! Me interesa *${name}* pero vi que tiene disponibilidad limitada. ¿Todavía tienen?`;
   window.open(`https://wa.me/${D.contact.whatsapp}?text=${encodeURIComponent(msg)}`,"_blank");
 }
 function orderProductUnavail(nameEnc){
   const name=decodeURIComponent(nameEnc);
   if(!D.contact.whatsapp){showNotif("⚠️ WhatsApp no configurado aún");return;}
-  const msg=`¡Hola ${D.business.name||""}! Vi que *${name}* está agotado. ¿Podrían avisarme cuando esté disponible?`;
+  const msg=`¡Hola ${_bizName()}! Vi que *${name}* está agotado. ¿Podrían avisarme cuando esté disponible?`;
   window.open(`https://wa.me/${D.contact.whatsapp}?text=${encodeURIComponent(msg)}`,"_blank");
 }
 function openWhatsApp(type){
   if(!D.contact.whatsapp){showNotif("⚠️ WhatsApp no configurado aún");return false;}
-  let msg=`¡Hola ${D.business.name||""}! Me gustaría hacer un pedido.`;
-  if(type==="paquetes")msg=`¡Hola ${D.business.name||""}! Me gustaría consultar sobre los paquetes semanales.`;
+  let msg=`¡Hola ${_bizName()}! Me gustaría hacer un pedido.`;
+  if(type==="paquetes")msg=`¡Hola ${_bizName()}! Me gustaría consultar sobre los paquetes semanales.`;
   window.open(`https://wa.me/${D.contact.whatsapp}?text=${encodeURIComponent(msg)}`,"_blank");
   return false;
 }
 function openWhatsAppFloat(){
   if(!D.contact.whatsapp){showNotif("⚠️ WhatsApp no configurado aún");return false;}
   const msg=lastProduct
-    ?`¡Hola ${D.business.name||""}! Quiero saber más sobre: *${lastProduct}*.`
-    :`¡Hola ${D.business.name||""}! Me gustaría hacer un pedido.`;
+    ?`¡Hola ${_bizName()}! Quiero saber más sobre: *${lastProduct}*.`
+    :`¡Hola ${_bizName()}! Me gustaría hacer un pedido.`;
   window.open(`https://wa.me/${D.contact.whatsapp}?text=${encodeURIComponent(msg)}`,"_blank");
   return false;
 }
@@ -1515,7 +1555,7 @@ async function sendFormMessage(){
 
   if(contactMethod==="wa"){
     const text=[
-      `¡Hola ${D.business.name}! 🥥`,
+      `¡Hola ${_bizName()}! 🥥`,
       `*Nombre:* ${name}`,
       prodLines?`*Productos:*\n${prodLines}`:"",
       msg?`*Mensaje:* ${msg}`:""
@@ -1666,6 +1706,7 @@ async function openAdminWithPassword(){
     document.getElementById("admOverlay").classList.add("open");
     populateAdmin();
     clearAiImage();
+    updateDirtyIndicator();
   }else{showNotif("❌ Contraseña incorrecta")}
 }
 function closeAdmin(){document.getElementById("admOverlay").classList.remove("open")}
@@ -1880,13 +1921,18 @@ function saveAdmin(){
   b.heroTitle=document.getElementById("a-heroTitle").value;
   b.heroSub=document.getElementById("a-heroSub").value;
   const hi=document.getElementById("a-heroImg").value.trim();
-  if(hi)b.heroImg=hi;
+  // Always update image fields — empty string = clear the image intentionally
+  // Only skip if field is empty AND we have a local base64 image (preserve it)
+  if(hi){b.heroImg=hi;}
+  else if(!b.heroImg||!b.heroImg.startsWith("data:")){b.heroImg="";}
   const li=document.getElementById("a-logoImg").value.trim();
-  if(li)b.logoImg=li;
+  if(li){b.logoImg=li;}
+  else if(!b.logoImg||!b.logoImg.startsWith("data:")){b.logoImg="";}
   b.showNavIcon=document.getElementById("a-showNavIcon").checked;
   b.showProdEmoji=document.getElementById("a-showProdEmoji").checked;
   const ai=document.getElementById("a-aboutImg").value.trim();
-  if(ai)b.aboutImg=ai;
+  if(ai){b.aboutImg=ai;}
+  else if(!b.aboutImg||!b.aboutImg.startsWith("data:")){b.aboutImg="";}
   b.aboutText=document.getElementById("a-aboutText").value;
   b.statsAuto=document.getElementById("a-statsAuto").checked;
   b.stats=(b.stats||[]).map((_,i)=>({num:document.getElementById(`a-stat-n-${i}`)?.value||"",lbl:document.getElementById(`a-stat-l-${i}`)?.value||""}));
@@ -1940,6 +1986,7 @@ function saveAdmin(){
     img:document.getElementById(`ag-img-${i}`)?.value.trim()||(D.gallery[i].img&&D.gallery[i].img.startsWith("data:")?D.gallery[i].img:"")
   }));
   saveData(D);renderAll();initReveal();
+  markLocalSaved();
   showNotif("✅ ¡Cambios guardados!");
   document.getElementById("admSaveStatus").textContent="✓ Guardado";
   setTimeout(()=>document.getElementById("admSaveStatus").textContent="Cora Luna",2500);
@@ -2458,6 +2505,7 @@ async function publishDataJson(){
     const lastStr=`${now} — data.json (${sizeKB} KB)`;
     localStorage.setItem("cl_gh_last",lastStr);
     document.getElementById("ghLastPublish").textContent=`Última publicación: ${lastStr}`;
+    markPublished();
     showNotif(`🚀 Publicado (${sizeKB} KB). Cambios en vivo en ~1 minuto.`);
     setTimeout(()=>setGhStatus("ok",`✅ Listo — ${now}`),4000);
   }catch(e){setGhStatus("err","❌ "+e.message);showNotif("❌ "+e.message);}
@@ -2489,6 +2537,7 @@ async function publishIndexHtml(){
     const lastStr=`${now} — index.html (${sizeKB} KB)`;
     localStorage.setItem("cl_gh_last",lastStr);
     document.getElementById("ghLastPublish").textContent=`Última publicación: ${lastStr}`;
+    markPublished();
     showNotif(`📄 index.html actualizado. Diseño en vivo en ~1 minuto.`);
     setTimeout(()=>setGhStatus("ok",`✅ Listo — ${now}`),4000);
   }catch(e){setGhStatus("err","❌ "+e.message);showNotif("❌ "+e.message);}
@@ -2555,7 +2604,16 @@ function initReveal(){
   document.querySelectorAll(".reveal").forEach(el=>{el.classList.remove("vis");obs.observe(el)});
 }
 
-// ── Events ──
+// ── Safe async onclick wrappers — prevents silent error swallowing ──
+function _run(fn){fn().catch(e=>{showNotif("❌ Error: "+e.message);console.error(e);});}
+function safeSendForm(){_run(sendFormMessage);}
+function safeChangePassword(){_run(changePassword);}
+function safeVerifyGh(){_run(verifyGhConnection);}
+function safePublishData(){_run(publishDataJson);}
+function safePublishHtml(){_run(publishIndexHtml);}
+function safeSaveAndPublish(){_run(saveAndPublish);}
+function safeTestW3F(){_run(testW3Form);}
+function safeOpenAdmin(){_run(openAdminWithPassword);}
 window.addEventListener("scroll",()=>{document.getElementById("navbar").classList.toggle("scrolled",window.scrollY>50)});
 document.getElementById("hamburger").addEventListener("click",()=>{document.getElementById("navLinks").classList.toggle("open")});
 document.querySelectorAll(".nav-links a").forEach(a=>a.addEventListener("click",()=>document.getElementById("navLinks").classList.remove("open")));
@@ -2568,8 +2626,21 @@ function importData(e){
   r.onload=ev=>{
     try{
       const parsed=JSON.parse(ev.target.result);
-      // Preserve adminPw from local
+      // Preserve device-only fields
       parsed.adminPw=D.adminPw||DEFAULT.adminPw;
+      // Resolve any __local__ image references from localStorage
+      if(parsed.products)parsed.products=parsed.products.map(p=>{
+        if(!p.img||p.img==="__local__")p.img=loadImg("prod_"+p.id)||"";
+        return p;
+      });
+      if(parsed.gallery)parsed.gallery=parsed.gallery.map(g=>{
+        if(!g.img||g.img==="__local__")g.img=loadImg("gal_"+g.id)||"";
+        return g;
+      });
+      if(!parsed.business.heroImg||parsed.business.heroImg==="__local__")
+        parsed.business.heroImg=loadImg("hero")||"";
+      if(!parsed.business.logoImg||parsed.business.logoImg==="__local__")
+        parsed.business.logoImg=loadImg("logo")||"";
       D=parsed;saveData(D);renderAll();populateAdmin();
       showNotif("📂 Datos importados correctamente");
     }catch{showNotif("❌ Archivo inválido o formato incorrecto");}
@@ -2577,25 +2648,30 @@ function importData(e){
   r.readAsText(f);
 }
 function resetToDefault(){
-  if(!confirm("¿Restablecer TODO a los valores por defecto? Se perderán todos los datos."))return;
-  localStorage.clear();D=JSON.parse(JSON.stringify(DEFAULT));saveData(D);renderAll();populateAdmin();showNotif("✅ Datos restablecidos");
+  if(!confirm("¿Restablecer TODO a los valores por defecto? Se perderán todos los datos del negocio."))return;
+  // Preserve device-only configs that are NOT business data
+  const ghCfg=localStorage.getItem("cl_gh");
+  const ghLast=localStorage.getItem("cl_gh_last");
+  const w3fKey=localStorage.getItem("cl_w3f");
+  const version=localStorage.getItem("cl_version");
+  localStorage.clear();
+  if(ghCfg)localStorage.setItem("cl_gh",ghCfg);
+  if(ghLast)localStorage.setItem("cl_gh_last",ghLast);
+  if(w3fKey)localStorage.setItem("cl_w3f",w3fKey);
+  if(version)localStorage.setItem("cl_version",version);
+  D=JSON.parse(JSON.stringify(DEFAULT));
+  saveData(D);renderAll();populateAdmin();
+  showNotif("✅ Datos restablecidos. Token GitHub y clave Web3Forms conservados.");
 }
 
 // ── Init ──
 document.addEventListener("DOMContentLoaded",async()=>{
-  // Render immediately with local data (instant, no flicker)
-  renderAll();
+  renderAll(); // includes renderFooter() which sets ftYear
   setTimeout(initReveal,100);
-  document.getElementById("ftYear").textContent=new Date().getFullYear();
-  // Then try to load fresh data.json from GitHub (updates in background)
   try{
     const fresh=await loadData();
     const isNew=JSON.stringify(fresh)!==JSON.stringify(D);
-    if(isNew){
-      D=fresh;
-      renderAll();
-      initReveal();
-    }
+    if(isNew){D=fresh;renderAll();initReveal();}
   }catch{/* stay with local data */}
 });
 </script>
