@@ -1018,13 +1018,22 @@ const DEFAULT={
   products:[],
   packages:[],
   gallery:[],
-  adminPw:"Mawezocasani@2026"
+  adminPw:"a2d1f6e919add44ceca19442cb59ddb17e799751adb27ddc6c69af6ae9c036ff"
 };
 
 // Image storage: separate from main data to avoid 5MB limit
 function saveImg(key,data){try{localStorage.setItem("cl_img_"+key,data);return true}catch{return false}}
 function loadImg(key){try{return localStorage.getItem("cl_img_"+key)||""}catch{return ""}}
 function deleteImg(key){try{localStorage.removeItem("cl_img_"+key)}catch{}}
+
+// ── Password hashing (SHA-256 via Web Crypto API) ──
+async function hashPw(pw){
+  const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(pw.trim()));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+function isHashed(s){return typeof s==="string"&&/^[a-f0-9]{64}$/.test(s);}
+// Migration: returns hash of pw if not already hashed, else returns as-is
+async function ensureHashed(pw){return isHashed(pw)?pw:await hashPw(pw);}
 
 // ── Merge remote data with local (local images + adminPw stay local) ──
 function mergeRemoteData(remote){
@@ -1049,7 +1058,8 @@ function loadLocalData(){
   try{
     const s=localStorage.getItem("cl_data");
     const d=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT));
-    if(!d.adminPw||d.adminPw==="coraluna")d.adminPw=DEFAULT.adminPw;
+    // Ensure adminPw is always present; migration from old plaintext handled at login time
+    if(!d.adminPw)d.adminPw=DEFAULT.adminPw;
     if(d.products)d.products=d.products.map(p=>({...p,price:p.price==="Consultar"?"":p.price}));
     return d;
   }catch{return JSON.parse(JSON.stringify(DEFAULT))}
@@ -1641,10 +1651,15 @@ function printProducts(){
 // ═══════════════════════════════════════════════════
 //  ADMIN
 // ═══════════════════════════════════════════════════
-function openAdminWithPassword(){
+async function openAdminWithPassword(){
   const pw=prompt("🔐 Contraseña:");
   if(pw===null)return;
-  if(pw.trim()===D.adminPw.trim()){
+  const hashed=await hashPw(pw);
+  // Support both hashed and legacy plaintext passwords during migration
+  const storedHash=await ensureHashed(D.adminPw);
+  if(hashed===storedHash){
+    // Migrate stored pw to hash if it wasn't already
+    if(!isHashed(D.adminPw)){D.adminPw=storedHash;saveData(D);}
     document.getElementById("admOverlay").classList.add("open");
     populateAdmin();
     clearAiImage();
@@ -1927,14 +1942,17 @@ function saveAdmin(){
   setTimeout(()=>document.getElementById("admSaveStatus").textContent="Cora Luna",2500);
 }
 
-function changePassword(){
+async function changePassword(){
   const cur=document.getElementById("a-pwCurrent").value;
   const nw=document.getElementById("a-pwNew").value;
   const cf=document.getElementById("a-pwConfirm").value;
-  if(cur!==D.adminPw){showNotif("❌ Contraseña actual incorrecta");return}
+  const curHash=await hashPw(cur);
+  const storedHash=await ensureHashed(D.adminPw);
+  if(curHash!==storedHash){showNotif("❌ Contraseña actual incorrecta");return}
   if(!nw||nw.length<6){showNotif("⚠️ La nueva contraseña debe tener al menos 6 caracteres");return}
   if(nw!==cf){showNotif("❌ Las contraseñas no coinciden");return}
-  D.adminPw=nw;saveData(D);
+  D.adminPw=await hashPw(nw);
+  saveData(D);
   document.getElementById("a-pwCurrent").value="";
   document.getElementById("a-pwNew").value="";
   document.getElementById("a-pwConfirm").value="";
