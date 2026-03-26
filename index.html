@@ -819,10 +819,29 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
           <div class="adm-fld"><label>WhatsApp (como se muestra)</label><input id="a-waDisplay" type="text" placeholder="6255-0600"></div>
         </div>
         <div class="adm-row">
-          <div class="adm-fld"><label>Correo Electrónico</label><input id="a-email" type="email" placeholder="correo@gmail.com"></div>
+          <div class="adm-fld"><label>Correo Electrónico <small style="color:var(--text-l);font-weight:400">(se muestra en la página)</small></label><input id="a-email" type="email" placeholder="correo@gmail.com"></div>
           <div class="adm-fld"><label>Ubicación (texto)</label><input id="a-location" type="text" placeholder="Liberia, Guanacaste"></div>
         </div>
         <div class="adm-fld"><label>URL Google Maps (opcional)</label><input id="a-locationUrl" type="url" placeholder="https://maps.google.com/..."></div>
+
+        <div class="adm-section-title">✉️ Envío de Correos (Web3Forms)</div>
+        <div class="adm-note blue">
+          💡 <strong>Web3Forms</strong> envía correos reales desde la página, gratis y sin límite.<br>
+          1. Entrá a <a href="https://web3forms.com" target="_blank" rel="noopener" style="color:var(--caramel-d);font-weight:700">web3forms.com ↗</a>
+          → poné tu correo → te llega la clave al instante.<br>
+          2. Pegá la clave aquí abajo. Los mensajes del formulario llegarán a ese correo.
+        </div>
+        <div class="adm-row">
+          <div class="adm-fld">
+            <label>Clave de Web3Forms <small style="color:var(--text-l);font-weight:400">(se guarda solo en este dispositivo)</small></label>
+            <input id="a-w3fKey" type="text" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off">
+          </div>
+          <div class="adm-fld" style="display:flex;align-items:flex-end">
+            <button class="btn-exp" onclick="testW3Form()" style="width:100%">🧪 Probar envío</button>
+          </div>
+        </div>
+        <div id="w3fTestResult" style="font-size:.82rem;margin-top:-8px;margin-bottom:8px"></div>
+
         <div class="adm-section-title">🕐 Horario de Atención</div>
         <div class="adm-note">💡 Activá los días que atendés y ponés el horario de apertura y cierre.</div>
         <div class="sched-grid" id="schedGrid"></div>
@@ -1306,8 +1325,7 @@ function renderContact(){
     const isLink=!!i.href;
     const tag=isLink?"a":"div";
     const targetAttr=isLink&&i.newTab?`target="_blank" rel="noopener"`:"";
-    // For mailto links add feedback onclick
-    const onclickAttr=isLink&&i.href.startsWith("mailto:")?`onclick="showNotif('✉️ Abriendo cliente de correo...')"` :"";
+    const onclickAttr=isLink&&i.href.startsWith("mailto:")?`onclick="setContactMethod('email');scrollToSec('#contacto')"`:"";
     return `<${tag} class="c-item${isLink?" clickable":""}" ${isLink?`href="${i.href}"`:""} ${targetAttr} ${onclickAttr}>
       <div class="c-ico ${i.cls}">${i.ico}</div>
       <div class="c-text"><strong>${i.strong}</strong><span>${i.span}</span></div>
@@ -1445,7 +1463,7 @@ function getPickedProducts(){
     return {name:cb.dataset.name,qty};
   });
 }
-function sendFormMessage(){
+async function sendFormMessage(){
   const name=document.getElementById("fName").value.trim();
   const phone=document.getElementById("fPhone")?.value.trim()||"";
   const msg=document.getElementById("fMsg").value.trim();
@@ -1464,40 +1482,113 @@ function sendFormMessage(){
 
   if(contactMethod==="wa"){
     const text=[
-      "¡Hola Cora Luna! 🥥",
+      `¡Hola ${D.business.name}! 🥥`,
       `*Nombre:* ${name}`,
       prodLines?`*Productos:*\n${prodLines}`:"",
       msg?`*Mensaje:* ${msg}`:""
     ].filter(Boolean).join("\n");
     window.open(`https://wa.me/${D.contact.whatsapp}?text=${encodeURIComponent(text)}`,"_blank");
   }else{
-    // Email: plain text without WA markdown asterisks
-    const emailAddr=D.contact.email;
-    if(!emailAddr){
-      showNotif("⚠️ No hay correo configurado en el panel de administración");
-      return;
-    }
-    const body=[
-      "¡Hola Cora Luna!",
-      `Nombre: ${name}`,
-      phone?`Teléfono: ${phone}`:"",
-      prodLines?`Productos:\n${prodLines}`:"",
-      msg?`Mensaje: ${msg}`:""
-    ].filter(Boolean).join("\n");
-    const subject=`Pedido${picked.length?" - "+picked.map(p=>p.name).join(", "):""} - ${name}`;
-    const mailtoUrl=`mailto:${emailAddr}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    // Must be in DOM for all browsers to respect the click
-    const a=document.createElement("a");
-    a.href=mailtoUrl;
-    a.style.display="none";
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(()=>document.body.removeChild(a),300);
-    // Give user feedback since mailto is silent on success
-    showNotif(`✉️ Abriendo cliente de correo para ${emailAddr}...`);
+    await sendEmailW3F({name,phone,prodLines,msg,picked});
   }
 }
 function scrollToSec(id){document.querySelector(id)?.scrollIntoView({behavior:"smooth"})}
+
+// ═══════════════════════════════════════════════════
+//  WEB3FORMS — email real desde el navegador
+// ═══════════════════════════════════════════════════
+async function sendEmailW3F({name,phone,prodLines,msg,picked}){
+  const key=localStorage.getItem("cl_w3f")||"";
+  const emailAddr=D.contact.email||"";
+
+  if(!key){
+    // Fallback: show instructions if no key configured
+    showNotif("⚠️ Configurá Web3Forms en el panel para enviar correos reales");
+    // Open admin panel on contact tab
+    openAdminWithPassword();
+    return;
+  }
+
+  // Disable send button to prevent double-submit
+  const btn=document.getElementById("fSendBtn");
+  const origTxt=btn.textContent;
+  btn.disabled=true;
+  btn.textContent="✉️ Enviando...";
+
+  const subject=`Pedido${picked.length?" — "+picked.map(p=>p.name).join(", "):""} — ${name}`;
+  const bodyLines=[
+    `Nombre: ${name}`,
+    phone?`Teléfono: ${phone}`:"",
+    prodLines?`\nProductos:\n${prodLines}`:"",
+    msg?`\nMensaje: ${msg}`:""
+  ].filter(Boolean).join("\n");
+
+  try{
+    const res=await fetch("https://api.web3forms.com/submit",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({
+        access_key:key,
+        subject:subject,
+        from_name:name,
+        replyto:emailAddr,   // replies go back to the store email
+        message:bodyLines,
+        // honeypot — spam prevention
+        botcheck:""
+      })
+    });
+    const data=await res.json();
+    if(data.success){
+      showNotif("✅ ¡Mensaje enviado! Te responderemos pronto.");
+      // Clear form
+      document.getElementById("fName").value="";
+      document.getElementById("fPhone").value="";
+      document.getElementById("fMsg").value="";
+      document.querySelectorAll("#fProductPicker .f-pick-cb:checked").forEach(cb=>{
+        cb.checked=false;togglePickItem(cb);
+      });
+    }else{
+      throw new Error(data.message||"Error al enviar");
+    }
+  }catch(e){
+    showNotif("❌ No se pudo enviar: "+e.message);
+  }finally{
+    btn.disabled=false;
+    btn.textContent=origTxt;
+  }
+}
+
+async function testW3Form(){
+  const key=document.getElementById("a-w3fKey").value.trim();
+  const result=document.getElementById("w3fTestResult");
+  if(!key){result.style.color="#721c24";result.textContent="⚠️ Ingresá la clave primero";return;}
+  result.style.color=getComputedStyle(document.documentElement).getPropertyValue("--text-l");
+  result.textContent="Enviando mensaje de prueba...";
+  try{
+    const res=await fetch("https://api.web3forms.com/submit",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({
+        access_key:key,
+        subject:"✅ Prueba — Cora Luna funciona",
+        message:"Este es un mensaje de prueba desde el panel de administración. Si lo recibiste, el formulario de contacto está configurado correctamente.",
+        botcheck:""
+      })
+    });
+    const data=await res.json();
+    if(data.success){
+      result.style.color="#155724";
+      result.textContent="✅ ¡Enviado! Revisá tu correo para confirmar que llegó.";
+      localStorage.setItem("cl_w3f",key);
+    }else{
+      result.style.color="#721c24";
+      result.textContent="❌ Clave inválida: "+data.message;
+    }
+  }catch{
+    result.style.color="#721c24";
+    result.textContent="❌ Error de conexión. Verificá tu internet.";
+  }
+}
 
 // ═══════════════════════════════════════════════════
 //  PRINT
@@ -1560,6 +1651,8 @@ function populateAdmin(){
   document.getElementById("a-email").value=c.email||"";
   document.getElementById("a-location").value=c.location||"";
   document.getElementById("a-locationUrl").value=c.locationUrl||"";
+  // W3F key is device-only, never in D
+  document.getElementById("a-w3fKey").value=localStorage.getItem("cl_w3f")||"";
   renderAdminSchedule();
   renderAdminProducts();
   renderAdminPackages();
@@ -1758,6 +1851,9 @@ function saveAdmin(){
   c.email=document.getElementById("a-email").value;
   c.location=document.getElementById("a-location").value;
   c.locationUrl=document.getElementById("a-locationUrl").value;
+  // W3F key — device-only, never goes to data.json
+  const w3fKey=document.getElementById("a-w3fKey").value.trim();
+  if(w3fKey)localStorage.setItem("cl_w3f",w3fKey);
   // Schedule
   c.schedule={};
   Object.keys(DAYS_ES).forEach(k=>{
@@ -2170,22 +2266,31 @@ async function ghPushFile(cfg, filePath, content, mimeType="text/plain"){
 async function verifyGhConnection(){
   const cfg=loadGhConfig();
   if(!cfg.token||!cfg.user||!cfg.repo){showNotif("⚠️ Completá la configuración primero");return;}
-  setGhStatus("busy","Verificando conexión...");
+  setGhStatus("busy","Verificando conexión con GitHub...",50);
   try{
     const r=await fetch(`https://api.github.com/repos/${cfg.user}/${cfg.repo}`,{
       headers:{Authorization:`Bearer ${cfg.token}`,"Accept":"application/vnd.github+json"}
     });
-    if(r.status===200){const d=await r.json();setGhStatus("ok",`✅ Conectado: ${d.full_name}`);}
-    else if(r.status===401)setGhStatus("err","❌ Token inválido o expirado.");
-    else if(r.status===404)setGhStatus("err","❌ Repositorio no encontrado. Verificá usuario y nombre.");
-    else setGhStatus("err",`❌ Error ${r.status}`);
-  }catch{setGhStatus("err","❌ Error de red.");}
+    if(r.status===200){
+      const d=await r.json();
+      setGhStatus("ok",`✅ Conectado a ${d.full_name} (rama: ${d.default_branch})`);
+      // Auto-fill branch if empty
+      const branchEl=document.getElementById("gh-branch");
+      if(branchEl&&!branchEl.value.trim())branchEl.value=d.default_branch;
+      showNotif("✅ Conexión con GitHub verificada");
+    }
+    else if(r.status===401)setGhStatus("err","❌ Token inválido o expirado. Creá uno nuevo en GitHub Settings → Tokens.");
+    else if(r.status===404)setGhStatus("err","❌ Repositorio no encontrado. Verificá el usuario y nombre exacto del repositorio.");
+    else setGhStatus("err",`❌ Error ${r.status} al conectar con GitHub`);
+  }catch{setGhStatus("err","❌ Error de red. Verificá tu conexión a internet.");}
 }
 
 async function publishDataJson(){
   const cfg=loadGhConfig();
   if(!cfg.token||!cfg.user||!cfg.repo){showNotif("⚠️ Configurá GitHub primero");switchToPublishTab();return;}
-  const btn=document.getElementById("ghPublishDataBtn");btn.disabled=true;
+  const btn=document.getElementById("ghPublishDataBtn");
+  const htmlBtn=document.getElementById("ghPublishHtmlBtn");
+  btn.disabled=true; if(htmlBtn)htmlBtn.disabled=true;
   setGhStatus("busy","Preparando data.json...",10);
   try{
     setGhStatus("busy","Construyendo datos...",30);
@@ -2199,19 +2304,21 @@ async function publishDataJson(){
     localStorage.setItem("cl_gh_last",lastStr);
     document.getElementById("ghLastPublish").textContent=`Última publicación: ${lastStr}`;
     showNotif(`🚀 data.json publicado (${sizeKB} KB). Cambios en vivo en ~1 min.`);
+    setTimeout(()=>setGhStatus("ok",`✅ Listo — ${lastStr}`),3000);
   }catch(e){setGhStatus("err","❌ "+e.message);showNotif("❌ "+e.message);}
-  finally{btn.disabled=false;}
+  finally{btn.disabled=false; if(htmlBtn)htmlBtn.disabled=false;}
 }
 
 async function publishIndexHtml(){
   const cfg=loadGhConfig();
   if(!cfg.token||!cfg.user||!cfg.repo){showNotif("⚠️ Configurá GitHub primero");switchToPublishTab();return;}
   if(!confirm("¿Publicar el index.html actual en GitHub? Esto actualiza el diseño de la página para todos los visitantes.")){return;}
-  const btn=document.getElementById("ghPublishHtmlBtn");btn.disabled=true;
+  const btn=document.getElementById("ghPublishHtmlBtn");
+  const dataBtn=document.getElementById("ghPublishDataBtn");
+  btn.disabled=true; if(dataBtn)dataBtn.disabled=true;
   setGhStatus("busy","Preparando index.html...",10);
   try{
     setGhStatus("busy","Generando código limpio...",30);
-    // Build clean index.html — no baked data, just the code
     const cleanHtml=buildCleanIndexHtml();
     const sizeKB=(cleanHtml.length/1024).toFixed(1);
     setGhStatus("busy",`Subiendo index.html (${sizeKB} KB)...`,65);
@@ -2221,13 +2328,29 @@ async function publishIndexHtml(){
     localStorage.setItem("cl_gh_last",lastStr);
     document.getElementById("ghLastPublish").textContent=`Última publicación: ${lastStr}`;
     showNotif(`📄 index.html actualizado (${sizeKB} KB). Diseño en vivo en ~1 min.`);
+    setTimeout(()=>setGhStatus("ok",`✅ Listo — ${lastStr}`),3000);
   }catch(e){setGhStatus("err","❌ "+e.message);showNotif("❌ "+e.message);}
-  finally{btn.disabled=false;}
+  finally{btn.disabled=false; if(dataBtn)dataBtn.disabled=false;}
 }
 
 function buildCleanIndexHtml(){
-  // Build index.html with NO baked data — it loads data.json at runtime
-  return "<!DOCTYPE html>\n"+document.documentElement.outerHTML;
+  // Must close admin panel state before capturing outerHTML
+  // otherwise the HTML published would have the admin panel visible to visitors
+  const overlay=document.getElementById("admOverlay");
+  const wasOpen=overlay.classList.contains("open");
+  const bodyOverflow=document.body.style.overflow;
+
+  // Temporarily close admin state
+  overlay.classList.remove("open");
+  document.body.style.overflow="";
+
+  const html="<!DOCTYPE html>\n"+document.documentElement.outerHTML;
+
+  // Restore admin state so the admin can keep working
+  if(wasOpen)overlay.classList.add("open");
+  document.body.style.overflow=bodyOverflow;
+
+  return html;
 }
 
 function switchToPublishTab(){
@@ -2237,14 +2360,18 @@ function switchToPublishTab(){
   document.getElementById("tab-publicar").classList.add("act");
 }
 async function saveAndPublish(){
+  // 1. Save locally first
   saveAdmin();
   const cfg=loadGhConfig();
-  if(cfg.user&&cfg.repo&&cfg.token){
-    await publishDataJson();
-  }else{
-    showNotif("✅ Cambios guardados localmente. Configurá GitHub para publicar en línea.");
+  if(!cfg.user||!cfg.repo||!cfg.token){
+    showNotif("✅ Cambios guardados. Configurá GitHub en la pestaña 🚀 Publicar para publicar en línea.");
     switchToPublishTab();
+    return;
   }
+  // 2. Switch to publish tab so user sees progress
+  switchToPublishTab();
+  // 3. Publish data.json
+  await publishDataJson();
 }
 function showNotif(msg){
   const el=document.getElementById("notif");el.textContent=msg;el.classList.add("show");
