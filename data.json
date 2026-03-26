@@ -1,0 +1,129 @@
+{
+  "business": {
+    "name": "Cora Luna",
+    "tagline": "Flan de coco & más",
+    "heroTitle": "Sabores que enamoran",
+    "heroSub": "Postres artesanales y platillos caseros preparados con ingredientes frescos y el toque especial que solo el amor puede dar.",
+    "heroImg": "",
+    "logoImg": "",
+    "showNavIcon": true,
+    "showProdEmoji": true,
+    "aboutTitle": "Cocina hecha con amor, desde el corazón",
+    "aboutText": "Somos un emprendimiento familiar apasionado por la cocina casera. Cada receta lleva el sabor auténtico que tanto extrañamos, preparado con ingredientes frescos y mucho cariño. Creemos que la mejor mesa es la que se comparte.",
+    "aboutImg": "",
+    "statsAuto": true,
+    "stats": [],
+    "values": [
+      {
+        "ico": "🥥",
+        "title": "Ingredientes Frescos",
+        "desc": "Usamos solo ingredientes de calidad, seleccionados con cuidado para cada preparación."
+      },
+      {
+        "ico": "🏠",
+        "title": "Hecho en Casa",
+        "desc": "Cada plato se elabora en nuestra cocina con recetas familiares llenas de tradición."
+      },
+      {
+        "ico": "🚚",
+        "title": "Entrega Conveniente",
+        "desc": "Coordinamos la entrega o pick-up según tu conveniencia y horario."
+      }
+    ]
+  },
+  "contact": {
+    "whatsapp": "50662550600",
+    "waDisplay": "6255-0600",
+    "email": "coralunacr@gmail.com",
+    "location": "Liberia, Guanacaste",
+    "locationUrl": "",
+    "schedule": {
+      "mon": { "open": true,  "from": "08:00", "to": "18:00" },
+      "tue": { "open": true,  "from": "08:00", "to": "18:00" },
+      "wed": { "open": true,  "from": "08:00", "to": "18:00" },
+      "thu": { "open": true,  "from": "08:00", "to": "18:00" },
+      "fri": { "open": true,  "from": "08:00", "to": "18:00" },
+      "sat": { "open": true,  "from": "08:00", "to": "14:00" },
+      "sun": { "open": false, "from": "",      "to": ""      }
+    }
+  },
+  "products": [
+    {
+      "id": 1,
+      "name": "Flan de Coco",
+      "cat": "Postres",
+      "desc": "Nuestro flan estrella: cremoso y suave con el delicioso sabor del coco fresco. Bañado en caramelo dorado y decorado con coco rallado.",
+      "price": "",
+      "status": "available",
+      "emoji": "🥥",
+      "img": ""
+    },
+    {
+      "id": 2,
+      "name": "Flan Napolitano",
+      "cat": "Postres",
+      "desc": "El clásico flan napolitano con queso crema, leche condensada y una capa perfecta de caramelo. Suave y delicioso.",
+      "price": "",
+      "status": "available",
+      "emoji": "🍮",
+      "img": ""
+    },
+    {
+      "id": 3,
+      "name": "Lasagna",
+      "cat": "Platos Fuertes",
+      "desc": "Capas generosas de pasta, carne molida, salsa bolognesa casera y queso gratinado al horno. ¡Un clásico irresistible!",
+      "price": "",
+      "status": "available",
+      "emoji": "🍝",
+      "img": ""
+    },
+    {
+      "id": 4,
+      "name": "Canelones",
+      "cat": "Platos Fuertes",
+      "desc": "Rollos de pasta rellenos con carne, cubiertos con salsa bechamel y queso dorado. Perfectos para compartir.",
+      "price": "",
+      "status": "available",
+      "emoji": "🫕",
+      "img": ""
+    },
+    {
+      "id": 5,
+      "name": "Pastel de Palmito",
+      "cat": "Platos Fuertes",
+      "desc": "Un pastel salado relleno de palmito, pollo y vegetales, cubierto con masa dorada y crujiente.",
+      "price": "",
+      "status": "available",
+      "emoji": "🥧",
+      "img": ""
+    }
+  ],
+  "packages": [
+    {
+      "id": 1,
+      "name": "Paquete Familiar",
+      "ico": "🍱",
+      "desc": "Menú completo: lasagna, canelones o pastel de palmito, más un postre.",
+      "price": "Consultar",
+      "detail": "4 porciones · Entrega a convenir"
+    },
+    {
+      "id": 2,
+      "name": "Solo Postres",
+      "ico": "🍮",
+      "desc": "Paquete de 2 flanes: uno de coco y uno napolitano, perfectos para el antojo de la semana.",
+      "price": "Consultar",
+      "detail": "2 flanes medianos"
+    },
+    {
+      "id": 3,
+      "name": "Combo Semana",
+      "ico": "🌟",
+      "desc": "Plato fuerte de lunes a viernes más postre de fin de semana. ¡Todo listo sin estrés!",
+      "price": "Consultar",
+      "detail": "5 días · Bajo pedido"
+    }
+  ],
+  "gallery": []
+}
