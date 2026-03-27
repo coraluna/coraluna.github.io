@@ -718,8 +718,12 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
                 <div class="aief-row"><label>Nombre</label><input id="aie-nombre" type="text" placeholder="Cora Luna"></div>
                 <div class="aief-row"><label>Eslogan</label><input id="aie-tagline" type="text" placeholder="Flan de coco & más"></div>
                 <div class="aief-row"><label>Descripción</label><textarea id="aie-desc" rows="2" placeholder="Postres caseros hechos con amor..."></textarea></div>
-                <div class="aief-row"><label>Usar imagen como foto principal (Hero)</label>
-                  <button class="aie-use-img-btn" id="heroImgBtn" onclick="useImageForHero()">📷 Usar como imagen Hero</button>
+                <div class="aief-row"><label>Imagen principal (Hero)</label>
+                  <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                    <button class="aie-use-img-btn" id="heroImgBtn" onclick="useImageForHero()" style="flex-shrink:0">📷 Usar imagen cargada</button>
+                    <span style="font-size:.74rem;color:var(--text-l)">o URL:</span>
+                    <input id="aie-hero-url" type="url" placeholder="https://i.imgur.com/..." style="flex:1;min-width:140px" oninput="onAieHeroUrlInput()">
+                  </div>
                 </div>
               </div>
               <div class="aief-section">
@@ -1711,8 +1715,9 @@ async function openAdminWithPassword(){
 }
 function closeAdmin(){
   document.getElementById("admOverlay").classList.remove("open");
-  // Full AI memory reset on panel close
-  _aieProductImages={};_aieHeroImg=null;_aieGalImages=[];
+  _aieProductImages={};_aieProductUrls={};
+  _aieHeroImg=null;_aieHeroUrl="";_aieHeroTs=0;_aieHeroImgTs=0;
+  _aieGalImages=[];
   aieImageDataURL=null;aieCroppedDataURL=null;aieProdCount=0;
 }
 function switchTab(name,btn){
@@ -1979,13 +1984,17 @@ function saveAdmin(){
     const showPrice=document.getElementById(`ap-showprice-${i}`)?.checked;
     const price=showPrice?(document.getElementById(`ap-price-${i}`)?.value.trim()||""):"";
     const imgUrl=document.getElementById(`ap-img-${i}`)?.value.trim()||"";
+    const existingImg=D.products[i].img||"";
+    // "Most recent wins": if URL field has value, use it (admin explicitly set it)
+    // If URL is empty, keep existing (could be base64 from AI or previous URL)
+    const finalImg=imgUrl||existingImg;
     return {
       id:D.products[i].id,
       name:document.getElementById(`ap-name-${i}`)?.value||"",cat,
       desc:document.getElementById(`ap-desc-${i}`)?.value||"",
       price,status:document.getElementById(`ap-status-${i}`)?.value||"available",
       emoji:document.getElementById(`ap-ico-${i}`)?.value||"🍽",
-      img:imgUrl||(D.products[i].img&&D.products[i].img.startsWith("data:")?D.products[i].img:"")
+      img:finalImg
     };
   });
   // Packages
@@ -2232,10 +2241,15 @@ function getCurrentAiImage(){return aieCroppedDataURL||aieImageDataURL}
 function useImageForHero(){
   if(!getCurrentAiImage()){showNotif("No hay imagen cargada");return}
   _aieHeroImg=getCurrentAiImage();
+  _aieHeroImgTs=Date.now(); // track when base64 was assigned
   D.business.heroImg=_aieHeroImg;
   saveData(D);markLocalSaved();
   document.getElementById("heroImgBtn").textContent="✅ Imagen Hero asignada";
   document.getElementById("heroImgBtn").classList.add("used");
+  // Clear URL field since base64 is now more recent
+  const urlEl=document.getElementById("aie-hero-url");
+  if(urlEl)urlEl.value="";
+  _aieHeroUrl="";_aieHeroTs=0;
   showNotif("✅ Imagen asignada como Hero. Publicá para que se vea en línea.");
 }
 
@@ -2252,47 +2266,102 @@ function addCurrentImageToGallery(){
   showNotif("✅ Imagen agregada a la galería");
 }
 
-function aieAddProduct(name="",price="",imgSrc=""){
+// _aieProductImages[id] = {img, ts} — tracks base64 image + when it was set
+// _aieProductUrls[id]   = {url, ts} — tracks URL       + when it was set
+let _aieProductUrls={};
+let _aieHeroUrl="", _aieHeroTs=0, _aieHeroImgTs=0;
+
+function _resolveAieProductImg(id){
+  // Returns whichever was set more recently: base64 or URL
+  const b=_aieProductImages[id]; // {img, ts}
+  const u=_aieProductUrls[id];   // {url, ts}
+  if(b&&u){return b.ts>=u.ts?b.img:u.url;}
+  if(b)return b.img;
+  if(u)return u.url;
+  return "";
+}
+
+function aieAddProduct(name="",price="",imgSrc="",urlSrc=""){
   const i=aieProdCount++;
   const id=`aie-prod-${i}`;
   // Restore from memory if available
-  const savedImg=_aieProductImages[id]||imgSrc||"";
+  const savedImg=(_aieProductImages[id]?.img)||imgSrc||"";
+  const savedUrl=(_aieProductUrls[id]?.url)||urlSrc||"";
+  const resolvedImg=_resolveAieProductImg(id)||savedImg||savedUrl;
   const div=document.createElement("div");
-  div.className="aie-prod-row";div.id=id;div.dataset.img=savedImg;
+  div.className="aie-prod-row";div.id=id;
+  div.dataset.img=savedImg;
+  div.dataset.url=savedUrl;
   div.innerHTML=`<div class="aie-prod-inputs">
     <input id="${id}-name" type="text" value="${esc(name)}" placeholder="Nombre del producto">
     <input id="${id}-price" type="text" value="${esc(price)}" placeholder="Precio">
+    <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
+      <input id="${id}-url" type="url" value="${esc(savedUrl)}" placeholder="URL de imagen (opcional)" style="flex:1;font-size:.78rem" oninput="onAieProdUrlInput('${id}')">
+    </div>
   </div>
   <div class="aie-prod-actions">
-    ${savedImg?`<img class="aie-img-mini" id="${id}-thumb" src="${savedImg}">`:""}
-    <button class="aie-use-for-prod ${savedImg?"used":""}" id="${id}-imgbtn" onclick="useImageForProduct('${id}')">
-      ${savedImg?"✅ Cambiar imagen":"📷 Asignar imagen"}
+    ${resolvedImg?`<img class="aie-img-mini" id="${id}-thumb" src="${resolvedImg}">`:""}
+    <button class="aie-use-for-prod ${resolvedImg?"used":""}" id="${id}-imgbtn" onclick="useImageForProduct('${id}')">
+      ${resolvedImg?"✅ Cambiar imagen AI":"📷 Usar imagen AI"}
     </button>
-    ${savedImg?`<button class="btn-del" title="Quitar imagen" onclick="removeAiProductImage('${id}')" style="padding:4px 8px;font-size:.75rem">✕ img</button>`:""}
+    ${resolvedImg?`<button class="btn-del" title="Quitar imagen" onclick="removeAiProductImage('${id}')" style="padding:4px 8px;font-size:.75rem">✕ img</button>`:""}
     <div style="flex:1"></div>
-    <button class="btn-del" title="Quitar este producto de la lista" onclick="removeAiProductRow('${id}')">✕</button>
+    <button class="btn-del" title="Quitar este producto" onclick="removeAiProductRow('${id}')">✕</button>
   </div>`;
   document.getElementById("aieProductList").appendChild(div);
 }
 
+function onAieProdUrlInput(id){
+  const urlEl=document.getElementById(id+"-url");
+  const url=urlEl?.value.trim()||"";
+  _aieProductUrls[id]={url,ts:Date.now()};
+  // Update thumb preview
+  const thumb=document.getElementById(id+"-thumb");
+  const resolved=_resolveAieProductImg(id);
+  if(resolved){
+    if(!thumb){
+      const t=document.createElement("img");t.className="aie-img-mini";t.id=id+"-thumb";
+      const btn=document.getElementById(id+"-imgbtn");
+      if(btn)btn.parentNode.insertBefore(t,btn);
+    }
+    if(thumb||document.getElementById(id+"-thumb"))document.getElementById(id+"-thumb").src=resolved;
+  }
+}
+
+function onAieHeroUrlInput(){
+  const url=document.getElementById("aie-hero-url")?.value.trim()||"";
+  if(url){
+    _aieHeroTs=Date.now();
+    _aieHeroUrl=url;
+    // If URL is newer than base64, update D.business.heroImg
+    if(!_aieHeroImg||_aieHeroTs>(_aieHeroImgTs||0)){
+      D.business.heroImg=url;
+      saveData(D);markLocalSaved();
+      document.getElementById("heroImgBtn").textContent="📷 Usar imagen cargada";
+      document.getElementById("heroImgBtn").classList.remove("used");
+    }
+  }
+}
+
 function removeAiProductRow(id){
-  // Remove from DOM and from memory
   document.getElementById(id)?.remove();
   delete _aieProductImages[id];
+  delete _aieProductUrls[id];
 }
 
 function removeAiProductImage(id){
   const row=document.getElementById(id);if(!row)return;
   row.dataset.img="";
   delete _aieProductImages[id];
-  // Remove thumb
-  document.getElementById(id+"-thumb")?.remove();
-  // Update button
+  // Recheck: if URL exists, use it as thumb
+  const url=_aieProductUrls[id]?.url||"";
+  const thumb=document.getElementById(id+"-thumb");
+  if(url&&thumb){thumb.src=url;}
+  else if(thumb&&!url){thumb.remove();}
   const btn=document.getElementById(id+"-imgbtn");
-  if(btn){btn.textContent="📷 Asignar imagen";btn.classList.remove("used");}
-  // Remove the remove button itself
-  row.querySelectorAll(".btn-del").forEach(b=>{if(b.getAttribute("onclick")&&b.getAttribute("onclick").includes("removeAiProductImage"))b.remove();});
-  showNotif("Imagen del producto quitada");
+  if(btn){btn.textContent=url?"✅ Cambiar imagen AI":"📷 Usar imagen AI";btn.classList.toggle("used",!!url);}
+  row.querySelectorAll(".btn-del").forEach(b=>{if(b.getAttribute("onclick")?.includes("removeAiProductImage"))b.remove();});
+  showNotif(url?"Imagen AI quitada — se usará la URL":"Imagen del producto quitada");
 }
 
 async function useImageForProduct(id){
@@ -2300,28 +2369,28 @@ async function useImageForProduct(id){
   const img=await compressImage(getCurrentAiImage(),600,0.8);
   const row=document.getElementById(id);if(!row)return;
   row.dataset.img=img;
-  _aieProductImages[id]=img; // persist in memory
+  const ts=Date.now();
+  _aieProductImages[id]={img,ts}; // persist with timestamp
   const btn=document.getElementById(id+"-imgbtn");
-  btn.textContent="✅ Cambiar imagen";btn.classList.add("used");
+  btn.textContent="✅ Cambiar imagen AI";btn.classList.add("used");
   let thumb=document.getElementById(id+"-thumb");
   if(!thumb){
     thumb=document.createElement("img");
     thumb.className="aie-img-mini";thumb.id=id+"-thumb";
     btn.parentNode.insertBefore(thumb,btn);
   }
-  thumb.src=img;
-  // Add/update remove button
+  // Show the most recent image in thumb
+  thumb.src=_resolveAieProductImg(id);
   let removeBtn=row.querySelector('[onclick*="removeAiProductImage"]');
   if(!removeBtn){
     removeBtn=document.createElement("button");
-    removeBtn.className="btn-del";
-    removeBtn.title="Quitar imagen";
+    removeBtn.className="btn-del";removeBtn.title="Quitar imagen AI";
     removeBtn.style.cssText="padding:4px 8px;font-size:.75rem";
     removeBtn.setAttribute("onclick",`removeAiProductImage('${id}')`);
     removeBtn.textContent="✕ img";
     btn.parentNode.insertBefore(removeBtn,btn.nextSibling);
   }
-  showNotif("✅ Imagen asignada al producto");
+  showNotif("✅ Imagen AI asignada al producto");
 }
 
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")}
@@ -2341,11 +2410,18 @@ function applyAiData(){
   const rows=document.querySelectorAll(".aie-prod-row");
   let newProds=0;
   rows.forEach(row=>{
-    const id=row.id,n=get(id+"-name"),pr=get(id+"-price")||"",img=row.dataset.img||"";
+    const id=row.id,n=get(id+"-name"),pr=get(id+"-price")||"";
     if(!n)return;
+    // "Most recent wins": compare base64 timestamp vs URL timestamp
+    const img=_resolveAieProductImg(id)||row.dataset.img||"";
     const ex=D.products.findIndex(p=>p.name.toLowerCase()===n.toLowerCase());
-    if(ex>=0){D.products[ex].price=pr;if(img)D.products[ex].img=img;}
-    else{D.products.push({id:Date.now()+Math.random(),name:n,cat:"Platos Fuertes",desc:"",price:pr,status:"available",emoji:"🍽",img});newProds++;}
+    if(ex>=0){
+      D.products[ex].price=pr;
+      if(img)D.products[ex].img=img;
+    }else{
+      D.products.push({id:Date.now()+Math.random(),name:n,cat:"Platos Fuertes",desc:"",price:pr,status:"available",emoji:"🍽",img});
+      newProds++;
+    }
   });
   if(newProds>0)applied.push(`${newProds} producto(s)`);
   saveData(D);markLocalSaved();renderAll();populateAdmin();initReveal();
