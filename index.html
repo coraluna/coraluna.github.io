@@ -2676,7 +2676,7 @@ async function ghPushFile(cfg, filePath, content, onProgress=null){
   prog(90,"Actualizando rama...");
   const updateRes=await fetch(`${base}/git/refs/heads/${cfg.branch}`,{
     method:"PATCH",headers:h,
-    body:JSON.stringify({sha:newCommitData.sha,force:false})
+    body:JSON.stringify({sha:newCommitData.sha,force:true})
   });
   if(!updateRes.ok){const e=await updateRes.json().catch(()=>({}));throw new Error(`Error ${updateRes.status} al actualizar la rama: ${e.message||""}`);}
   prog(100,"✅ Completado");
