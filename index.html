@@ -489,7 +489,7 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
     </div>
     <div class="hero-img-wrap">
       <div class="hero-img-card" id="heroImgCard">
-        <div class="hero-img-ph"><span class="ph-ico">🍮</span><p>Agrega una foto desde el panel de administrador</p></div>
+        <div class="hero-img-ph"><span class="ph-ico">🍮</span><p></p></div>
       </div>
       <div class="hero-float-tag">
         <span class="tag-ico">❤️</span>
@@ -903,22 +903,19 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
         </div>
         <div class="adm-row">
           <div class="adm-fld"><label>Usuario de GitHub</label>
-            <input id="gh-user" type="text" placeholder="coraluna" autocomplete="off"></div>
+            <input id="gh-user" type="text" placeholder="coraluna" value="coraluna" autocomplete="off"></div>
           <div class="adm-fld"><label>Repositorio</label>
-            <input id="gh-repo" type="text" placeholder="coraluna.github.io" autocomplete="off"></div>
+            <input id="gh-repo" type="text" placeholder="coraluna.github.io" value="coraluna.github.io" autocomplete="off"></div>
         </div>
         <div class="adm-row">
           <div class="adm-fld"><label>Rama (branch)</label>
-            <input id="gh-branch" type="text" placeholder="main" autocomplete="off"></div>
+            <input id="gh-branch" type="text" placeholder="main" value="main" autocomplete="off"></div>
           <div class="adm-fld"><label>Token de acceso personal</label>
             <div style="position:relative">
               <input id="gh-token" type="password" placeholder="ghp_... o github_pat_..." autocomplete="off" style="padding-right:40px">
               <button type="button" onclick="toggleGhToken()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:.9rem;color:var(--text-l)">👁</button>
             </div>
-            <div style="font-size:.74rem;color:var(--text-l);margin-top:4px">
-              Token clásico (<code>ghp_</code>): necesita scope <code>repo</code> ·
-              Token fine-grained (<code>github_pat_</code>): necesita permiso <code>Contents: Write</code>
-            </div>
+
           </div>
         </div>
         <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
@@ -1102,23 +1099,26 @@ function updateDirtyIndicator(){
 }
 
 async function loadData(){
-  try{
-    const res=await fetch("./data.json?t="+Date.now(),{cache:"no-store"});
-    if(res.ok){
-      const remote=await res.json();
-      // UX 10: Don't overwrite local changes that haven't been published yet
-      // If admin saved locally after the last publish, keep local version
-      if(hasUnpublishedChanges()){
-        // Just merge images and secrets from remote, keep local content
-        const local=loadLocalData();
-        local.adminPw=local.adminPw||DEFAULT.adminPw;
-        return local;
+  // Always try to fetch fresh data.json — no stale cache ever
+  if(location.protocol!=="file:"){
+    try{
+      const res=await fetch("./data.json?nocache="+Date.now(),{
+        cache:"no-store",
+        headers:{"Cache-Control":"no-cache, no-store, must-revalidate","Pragma":"no-cache"}
+      });
+      if(res.ok){
+        const remote=await res.json();
+        if(hasUnpublishedChanges()){
+          const local=loadLocalData();
+          local.adminPw=local.adminPw||DEFAULT.adminPw;
+          return local;
+        }
+        const merged=mergeRemoteData(remote);
+        saveDataLocal(merged);
+        return merged;
       }
-      const merged=mergeRemoteData(remote);
-      saveDataLocal(merged);
-      return merged;
-    }
-  }catch{/* file:// or offline — fall through */}
+    }catch{/* offline or file:// — fall through */}
+  }
   return loadLocalData();
 }
 function saveDataLocal(d){
@@ -1208,7 +1208,7 @@ function renderBusiness(){
 
   // Hero image
   const hic=document.getElementById("heroImgCard");
-  hic.innerHTML=b.heroImg?`<img src="${b.heroImg}" alt="${b.name}" loading="lazy">`:`<div class="hero-img-ph"><span class="ph-ico">🍮</span><p>Agrega imagen desde el panel</p></div>`;
+  hic.innerHTML=b.heroImg?`<img src="${b.heroImg}" alt="${b.name}" loading="lazy">`:`<div class="hero-img-ph"><span class="ph-ico">🍮</span><p></p></div>`;
 
   // Stats
   const stats=b.statsAuto!==false?[
@@ -1249,7 +1249,7 @@ function renderProducts(){
   const container=document.getElementById("productsContainer");
   const showEmoji=D.business.showProdEmoji!==false;
   if(!D.products.length){
-    container.innerHTML=`<p style="color:var(--text-l);font-family:'Lora',serif;text-align:center">Aún no hay productos. Agrégalos desde el panel.</p>`;
+    container.innerHTML=`<p style="color:var(--text-l);font-family:'Lora',serif;text-align:center">Aún no hay productos disponibles.</p>`;
     return;
   }
   // Group by category
@@ -1326,7 +1326,7 @@ function productCard(p,showEmoji){
 
 function renderPackages(){
   const el=document.getElementById("menuGrid");
-  if(!D.packages.length){el.innerHTML=`<p style="color:rgba(253,245,236,.5)">Agrega paquetes desde el panel.</p>`;return}
+  if(!D.packages.length){el.innerHTML=`<p style="color:rgba(253,245,236,.5)"></p>`;return}
   el.innerHTML=D.packages.map(p=>`
     <div class="m-card">
       <span class="m-ico">${p.ico||"📦"}</span>
@@ -1338,7 +1338,7 @@ function renderPackages(){
 
 function renderGallery(){
   const el=document.getElementById("galGrid");
-  if(!D.gallery.length){el.innerHTML=`<p>Agrega fotos desde el panel.</p>`;return}
+  if(!D.gallery.length){el.innerHTML=``;return}
   el.innerHTML=D.gallery.map((g,i)=>`
     <div class="gal-item" onclick="openGalleryModal(${i})">
       ${g.img?`<img src="${g.img}" alt="Galería" loading="lazy">`:`<div class="gal-ph" style="height:${i%3===0?280:180}px">${g.emoji||"📸"}</div>`}
@@ -1445,13 +1445,13 @@ function closeProdModal(){
   document.body.style.overflow="";
 }
 function openGalleryModal(idx){
-  // Use index to avoid XSS from raw URL in onclick string
   const g=D.gallery[idx];
   if(!g||!g.img){return;}
+  const modal=document.getElementById("prodModal");
   document.getElementById("prodModalContent").innerHTML=`
-    <button class="prod-modal-close" onclick="closeProdModal()" style="top:10px;right:10px;position:absolute;z-index:10">✕</button>
-    <img style="width:100%;max-height:85vh;object-fit:contain;border-radius:16px" src="${g.img.replace(/"/g,'&quot;')}" alt="Galería Cora Luna">`;
-  document.getElementById("prodModal").classList.add("open");
+    <img style="width:100%;max-height:85vh;object-fit:contain;border-radius:16px;display:block" src="${g.img.replace(/"/g,'&quot;')}" alt="Galería">`;
+  // The close button is already in the modal box, no need to add a second one
+  modal.classList.add("open");
   document.body.style.overflow="hidden";
 }
 
@@ -1709,7 +1709,12 @@ async function openAdminWithPassword(){
     updateDirtyIndicator();
   }else{showNotif("❌ Contraseña incorrecta")}
 }
-function closeAdmin(){document.getElementById("admOverlay").classList.remove("open")}
+function closeAdmin(){
+  document.getElementById("admOverlay").classList.remove("open");
+  // Full AI memory reset on panel close
+  _aieProductImages={};_aieHeroImg=null;_aieGalImages=[];
+  aieImageDataURL=null;aieCroppedDataURL=null;aieProdCount=0;
+}
 function switchTab(name,btn){
   document.querySelectorAll(".adm-sec").forEach(s=>s.classList.remove("act"));
   document.querySelectorAll(".adm-tab").forEach(t=>t.classList.remove("act"));
@@ -1833,8 +1838,11 @@ function renderAdminProducts(){
         </div>
         <div class="adm-fld"><label>Descripción</label><textarea id="ap-desc-${i}" rows="2">${esc(p.desc||"")}</textarea></div>
         <div class="adm-fld"><label>URL de Foto <small style="color:var(--text-l)">(pega URL pública para que todos la vean)</small></label>
-          <input type="url" id="ap-img-${i}" value="${p.img&&!p.img.startsWith('data:')?esc(p.img):""}" placeholder="https://i.imgur.com/...">
-          ${p.img&&p.img.startsWith("data:")?`<div style="margin-top:6px;font-size:.75rem;color:#856404">📌 Imagen local asignada desde Asistente Visual. Usá Exportar HTML para compartirla.</div>`:""}
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="url" id="ap-img-${i}" value="${p.img&&!p.img.startsWith('data:')?esc(p.img):""}" placeholder="https://i.imgur.com/..." style="flex:1">
+            ${p.img?`<button class="btn-del" style="flex-shrink:0;padding:8px 10px;font-size:.75rem" onclick="removeProductImg(${i})" title="Quitar imagen">✕ img</button>`:""}
+          </div>
+          ${p.img&&p.img.startsWith("data:")?`<div style="margin-top:6px;font-size:.75rem;color:#856404">📌 Imagen del Asistente Visual. <button onclick="removeProductImg(${i})" style="background:none;border:none;color:#856404;cursor:pointer;font-size:.75rem;text-decoration:underline">Quitar imagen</button></div>`:""}
         </div>
       </div>
     </div>`;
@@ -1898,6 +1906,12 @@ function renderAdminGallery(){
     </div>`).join("");
 }
 
+function removeProductImg(i){
+  D.products[i].img="";
+  deleteImg("prod_"+D.products[i].id);
+  renderAdminProducts();
+  showNotif("Imagen del producto quitada");
+}
 function addProduct(){
   D.products.push({id:Date.now(),name:"Nuevo Producto",cat:"Postres",desc:"Descripción del producto.",price:"",status:"available",emoji:"🍽",img:""});
   renderAdminProducts();showNotif("Producto agregado — ábrelo para editarlo");
@@ -2038,6 +2052,10 @@ function exportSelfContainedHTML(){
 // ═══════════════════════════════════════════════════
 let aieImageDataURL=null, aieCroppedDataURL=null, aieProdCount=0;
 let cropState={active:false,startX:0,startY:0,endX:0,endY:0,img:null,ratio:0};
+// Persist product image assignments across image changes
+let _aieProductImages={}; // {prodRowId: dataURL}
+let _aieHeroImg=null;
+let _aieGalImages=[]; // [{dataURL}]
 
 function initAiTab(){}
 function aiDragOver(e){e.preventDefault();document.getElementById("aiUploadArea").classList.add("drag")}
@@ -2058,13 +2076,36 @@ async function processAiFile(file){
   document.getElementById("aie-wadisp").value=c.waDisplay||"";
   document.getElementById("aie-email").value=c.email||"";
   document.getElementById("aie-loc").value=c.location||"";
-  aieProdCount=0;
-  document.getElementById("aieProductList").innerHTML="";
-  D.products.forEach(p=>aieAddProduct(p.name,p.price,p.img));
+
+  // Only reset product list if first time (no existing rows)
+  const existingRows=document.querySelectorAll(".aie-prod-row");
+  if(existingRows.length===0){
+    aieProdCount=0;
+    document.getElementById("aieProductList").innerHTML="";
+    D.products.forEach(p=>aieAddProduct(p.name,p.price,_aieProductImages["prod_"+p.id]||p.img));
+  } else {
+    // Just update thumbnail states from memory
+    existingRows.forEach(row=>{
+      const savedImg=_aieProductImages[row.id];
+      if(savedImg){
+        row.dataset.img=savedImg;
+        const thumb=document.getElementById(row.id+"-thumb");
+        if(thumb)thumb.src=savedImg;
+      }
+    });
+  }
+
+  // Restore hero button state
+  const heroBtn=document.getElementById("heroImgBtn");
+  if(_aieHeroImg){
+    heroBtn.textContent="✅ Imagen Hero asignada";heroBtn.classList.add("used");
+  }else{
+    heroBtn.textContent="📷 Usar como imagen Hero";heroBtn.classList.remove("used");
+  }
+
   document.getElementById("aiUploadState").style.display="none";
   document.getElementById("aiEditorState").style.display="block";
   document.getElementById("aiTips").style.display="none";
-  // Setup crop
   setupCropCanvas();
   document.getElementById("cropActions").style.display="flex";
   document.getElementById("cropWrap").style.display="block";
@@ -2122,11 +2163,24 @@ function drawCropOverlay(){
   ctx.drawImage(cropState.img,0,0,canvas.width,canvas.height);
   const x=Math.min(cropState.startX,cropState.endX),y=Math.min(cropState.startY,cropState.endY);
   const w=Math.abs(cropState.endX-cropState.startX),h=Math.abs(cropState.endY-cropState.startY);
-  ctx.fillStyle="rgba(0,0,0,.45)";
+  // Semi-transparent overlay — keep selected area fully visible
+  ctx.save();
+  ctx.fillStyle="rgba(0,0,0,0.5)";
   ctx.fillRect(0,0,canvas.width,canvas.height);
+  // Clear the selection area so image shows through
   ctx.clearRect(x,y,w,h);
-  ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue("--caramel").trim();
-  ctx.lineWidth=2;ctx.strokeRect(x,y,w,h);
+  // Redraw just the selected area from original image (fully opaque)
+  ctx.drawImage(cropState.img,
+    x/cropState.scale, y/cropState.scale,
+    w/cropState.scale, h/cropState.scale,
+    x,y,w,h
+  );
+  ctx.restore();
+  ctx.strokeStyle="#fff";
+  ctx.lineWidth=2;
+  ctx.setLineDash([5,3]);
+  ctx.strokeRect(x,y,w,h);
+  ctx.setLineDash([]);
 }
 function setCropRatio(){if(cropState.drawing)return;}
 function applyCrop(){
@@ -2156,39 +2210,38 @@ function resetCrop(){
 }
 
 function clearAiImage(){
-  aieImageDataURL=null;aieCroppedDataURL=null;aieProdCount=0;
+  // Only reset the current image — keep product assignments in memory
+  aieImageDataURL=null;aieCroppedDataURL=null;
   const uploadState=document.getElementById("aiUploadState");
   const editorState=document.getElementById("aiEditorState");
   const tips=document.getElementById("aiTips");
   const fileInput=document.getElementById("aiFileInput");
-  const prodList=document.getElementById("aieProductList");
   if(uploadState)uploadState.style.display="block";
   if(editorState)editorState.style.display="none";
   if(tips)tips.style.display="block";
   if(fileInput)fileInput.value="";
-  if(prodList)prodList.innerHTML="";
-  const heroBtn=document.getElementById("heroImgBtn");
-  const galBtn=document.getElementById("galImgBtn");
-  if(heroBtn){heroBtn.textContent="📷 Usar como imagen Hero";heroBtn.classList.remove("used");}
-  if(galBtn){galBtn.textContent="📸 Agregar imagen a Galería";galBtn.classList.remove("used");}
+  // NOTE: do NOT clear _aieProductImages — images assigned persist across image changes
 }
 
 function getCurrentAiImage(){return aieCroppedDataURL||aieImageDataURL}
 
 function useImageForHero(){
-  if(!getCurrentAiImage()){showNotif("No hay imagen");return}
-  D.business.heroImg=getCurrentAiImage();
+  if(!getCurrentAiImage()){showNotif("No hay imagen cargada");return}
+  _aieHeroImg=getCurrentAiImage();
+  D.business.heroImg=_aieHeroImg;
   document.getElementById("heroImgBtn").textContent="✅ Imagen Hero asignada";
   document.getElementById("heroImgBtn").classList.add("used");
   showNotif("✅ Imagen asignada como Hero");
 }
 
 function addCurrentImageToGallery(){
-  if(!getCurrentAiImage()){showNotif("No hay imagen");return}
+  if(!getCurrentAiImage()){showNotif("No hay imagen cargada");return}
   const img=getCurrentAiImage();
-  D.gallery.push({id:Date.now(),emoji:"📸",img});
+  const entry={id:Date.now(),emoji:"📸",img};
+  D.gallery.push(entry);
+  _aieGalImages.push(img);
   renderAdminGallery();renderGallery();
-  document.getElementById("galImgBtn").textContent="✅ Imagen agregada a Galería";
+  document.getElementById("galImgBtn").textContent=`✅ ${_aieGalImages.length} imagen(es) en Galería`;
   document.getElementById("galImgBtn").classList.add("used");
   showNotif("✅ Imagen agregada a la galería");
 }
@@ -2196,33 +2249,73 @@ function addCurrentImageToGallery(){
 function aieAddProduct(name="",price="",imgSrc=""){
   const i=aieProdCount++;
   const id=`aie-prod-${i}`;
+  // Restore from memory if available
+  const savedImg=_aieProductImages[id]||imgSrc||"";
   const div=document.createElement("div");
-  div.className="aie-prod-row";div.id=id;div.dataset.img=imgSrc||"";
+  div.className="aie-prod-row";div.id=id;div.dataset.img=savedImg;
   div.innerHTML=`<div class="aie-prod-inputs">
     <input id="${id}-name" type="text" value="${esc(name)}" placeholder="Nombre del producto">
     <input id="${id}-price" type="text" value="${esc(price)}" placeholder="Precio">
   </div>
   <div class="aie-prod-actions">
-    ${imgSrc?`<img class="aie-img-mini" src="${imgSrc}">`:""}
-    <button class="aie-use-for-prod ${imgSrc?"used":""}" id="${id}-imgbtn" onclick="useImageForProduct('${id}')">
-      ${imgSrc?"✅ Imagen asignada":"📷 Asignar imagen"}
+    ${savedImg?`<img class="aie-img-mini" id="${id}-thumb" src="${savedImg}">`:""}
+    <button class="aie-use-for-prod ${savedImg?"used":""}" id="${id}-imgbtn" onclick="useImageForProduct('${id}')">
+      ${savedImg?"✅ Cambiar imagen":"📷 Asignar imagen"}
     </button>
+    ${savedImg?`<button class="btn-del" title="Quitar imagen" onclick="removeAiProductImage('${id}')" style="padding:4px 8px;font-size:.75rem">✕ img</button>`:""}
     <div style="flex:1"></div>
-    <button class="btn-del" onclick="document.getElementById('${id}').remove()">✕</button>
+    <button class="btn-del" title="Quitar este producto de la lista" onclick="removeAiProductRow('${id}')">✕</button>
   </div>`;
   document.getElementById("aieProductList").appendChild(div);
 }
 
+function removeAiProductRow(id){
+  // Remove from DOM and from memory
+  document.getElementById(id)?.remove();
+  delete _aieProductImages[id];
+}
+
+function removeAiProductImage(id){
+  const row=document.getElementById(id);if(!row)return;
+  row.dataset.img="";
+  delete _aieProductImages[id];
+  // Remove thumb
+  document.getElementById(id+"-thumb")?.remove();
+  // Update button
+  const btn=document.getElementById(id+"-imgbtn");
+  if(btn){btn.textContent="📷 Asignar imagen";btn.classList.remove("used");}
+  // Remove the remove button itself
+  row.querySelectorAll(".btn-del").forEach(b=>{if(b.getAttribute("onclick")&&b.getAttribute("onclick").includes("removeAiProductImage"))b.remove();});
+  showNotif("Imagen del producto quitada");
+}
+
 async function useImageForProduct(id){
-  if(!getCurrentAiImage()){showNotif("No hay imagen");return}
+  if(!getCurrentAiImage()){showNotif("No hay imagen cargada");return}
   const img=await compressImage(getCurrentAiImage(),600,0.8);
   const row=document.getElementById(id);if(!row)return;
   row.dataset.img=img;
+  _aieProductImages[id]=img; // persist in memory
   const btn=document.getElementById(id+"-imgbtn");
-  btn.textContent="✅ Imagen asignada";btn.classList.add("used");
+  btn.textContent="✅ Cambiar imagen";btn.classList.add("used");
   let thumb=document.getElementById(id+"-thumb");
-  if(!thumb){thumb=document.createElement("img");thumb.className="aie-img-mini";thumb.id=id+"-thumb";btn.parentNode.insertBefore(thumb,btn);}
-  thumb.src=img;showNotif("✅ Imagen asignada al producto");
+  if(!thumb){
+    thumb=document.createElement("img");
+    thumb.className="aie-img-mini";thumb.id=id+"-thumb";
+    btn.parentNode.insertBefore(thumb,btn);
+  }
+  thumb.src=img;
+  // Add/update remove button
+  let removeBtn=row.querySelector('[onclick*="removeAiProductImage"]');
+  if(!removeBtn){
+    removeBtn=document.createElement("button");
+    removeBtn.className="btn-del";
+    removeBtn.title="Quitar imagen";
+    removeBtn.style.cssText="padding:4px 8px;font-size:.75rem";
+    removeBtn.setAttribute("onclick",`removeAiProductImage('${id}')`);
+    removeBtn.textContent="✕ img";
+    btn.parentNode.insertBefore(removeBtn,btn.nextSibling);
+  }
+  showNotif("✅ Imagen asignada al producto");
 }
 
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")}
@@ -2262,26 +2355,17 @@ function applyAiData(){
 // ═══════════════════════════════════════════════════
 let _logoClicks=0,_logoTimer=null;
 function handleLogoClick(e){
-  // Only intercept if clicking the logo itself, not child links
   _logoClicks++;
   clearTimeout(_logoTimer);
   if(_logoClicks>=5){
     _logoClicks=0;
     e.preventDefault();
-    showLogoHint(""); // clear
-    openAdminWithPassword();
+    safeOpenAdmin();
     return;
   }
-  const remaining=5-_logoClicks;
-  showLogoHint(`🔐 ${remaining} click${remaining>1?"s":""} más para administrar`);
-  _logoTimer=setTimeout(()=>{_logoClicks=0;showLogoHint("");},2000);
+  _logoTimer=setTimeout(()=>{_logoClicks=0;},2000);
 }
-function showLogoHint(msg){
-  let el=document.getElementById("logoClickHint");
-  if(!el){el=document.createElement("div");el.id="logoClickHint";el.className="logo-click-hint";document.body.appendChild(el);}
-  if(!msg){el.classList.remove("show");return;}
-  el.textContent=msg;el.classList.add("show");
-}
+function showLogoHint(msg){} // intentionally empty — no hints visible to public
 
 // ═══════════════════════════════════════════════════
 //  GITHUB API PUBLISH
@@ -2604,14 +2688,23 @@ function initReveal(){
   document.querySelectorAll(".reveal").forEach(el=>{el.classList.remove("vis");obs.observe(el)});
 }
 
-// ── Safe async onclick wrappers — prevents silent error swallowing ──
+// ── Publish cooldown: prevent double-publish ──
+let _publishCooldown=false;
+function _startPublishCooldown(ms=8000){
+  _publishCooldown=true;
+  setTimeout(()=>{_publishCooldown=false;},ms);
+}
+function _checkPublishCooldown(){
+  if(_publishCooldown){showNotif("⏳ Publicación en curso o recién completada, esperá unos segundos.");return false;}
+  return true;
+}
 function _run(fn){fn().catch(e=>{showNotif("❌ Error: "+e.message);console.error(e);});}
 function safeSendForm(){_run(sendFormMessage);}
 function safeChangePassword(){_run(changePassword);}
 function safeVerifyGh(){_run(verifyGhConnection);}
-function safePublishData(){_run(publishDataJson);}
-function safePublishHtml(){_run(publishIndexHtml);}
-function safeSaveAndPublish(){_run(saveAndPublish);}
+function safePublishData(){if(!_checkPublishCooldown())return;_startPublishCooldown();_run(publishDataJson);}
+function safePublishHtml(){if(!_checkPublishCooldown())return;_startPublishCooldown();_run(publishIndexHtml);}
+function safeSaveAndPublish(){if(!_checkPublishCooldown())return;_startPublishCooldown();_run(saveAndPublish);}
 function safeTestW3F(){_run(testW3Form);}
 function safeOpenAdmin(){_run(openAdminWithPassword);}
 window.addEventListener("scroll",()=>{document.getElementById("navbar").classList.toggle("scrolled",window.scrollY>50)});
@@ -2648,8 +2741,8 @@ function importData(e){
   r.readAsText(f);
 }
 function resetToDefault(){
-  if(!confirm("¿Restablecer TODO a los valores por defecto? Se perderán todos los datos del negocio."))return;
-  // Preserve device-only configs that are NOT business data
+  const msg=`⚠️ ATENCIÓN: Esta acción eliminará TODOS los datos del negocio:\n\n• Nombre, eslogan y textos\n• Todos los productos (${D.products.length})\n• Todos los paquetes (${D.packages.length})\n• Galería (${D.gallery.length} imágenes)\n• Horarios y datos de contacto\n• Imágenes asignadas desde el Asistente Visual\n\nEl token de GitHub y la clave de correo se conservarán.\n\n¿Estás seguro que querés continuar?`;
+  if(!confirm(msg))return;
   const ghCfg=localStorage.getItem("cl_gh");
   const ghLast=localStorage.getItem("cl_gh_last");
   const w3fKey=localStorage.getItem("cl_w3f");
