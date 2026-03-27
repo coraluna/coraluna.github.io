@@ -1909,24 +1909,28 @@ function renderAdminGallery(){
 function removeProductImg(i){
   D.products[i].img="";
   deleteImg("prod_"+D.products[i].id);
+  saveData(D);markLocalSaved();
   renderAdminProducts();
   showNotif("Imagen del producto quitada");
 }
 function addProduct(){
   D.products.push({id:Date.now(),name:"Nuevo Producto",cat:"Postres",desc:"Descripción del producto.",price:"",status:"available",emoji:"🍽",img:""});
+  saveData(D);markLocalSaved();
   renderAdminProducts();showNotif("Producto agregado — ábrelo para editarlo");
 }
-function deleteProduct(i){if(confirm("¿Eliminar este producto?"))D.products.splice(i,1),renderAdminProducts()}
+function deleteProduct(i){if(confirm("¿Eliminar este producto?")){{D.products.splice(i,1);saveData(D);markLocalSaved();renderAdminProducts();}}}
 function addPackage(){
   D.packages.push({id:Date.now(),name:"Nuevo Paquete",ico:"📦",desc:"Descripción.",price:"",detail:""});
+  saveData(D);markLocalSaved();
   renderAdminPackages();
 }
-function deletePackage(i){if(confirm("¿Eliminar?"))D.packages.splice(i,1),renderAdminPackages()}
+function deletePackage(i){if(confirm("¿Eliminar?")){{D.packages.splice(i,1);saveData(D);markLocalSaved();renderAdminPackages();}}}
 function addGalleryItem(imgData,emoji){
   D.gallery.push({id:Date.now(),emoji:emoji||"📸",img:imgData||""});
+  saveData(D);markLocalSaved();
   renderAdminGallery();renderGallery();
 }
-function deleteGalleryItem(i){D.gallery.splice(i,1);renderAdminGallery();renderGallery()}
+function deleteGalleryItem(i){D.gallery.splice(i,1);saveData(D);markLocalSaved();renderAdminGallery();renderGallery();}
 
 function saveAdmin(){
   const b=D.business, c=D.contact;
@@ -2229,9 +2233,10 @@ function useImageForHero(){
   if(!getCurrentAiImage()){showNotif("No hay imagen cargada");return}
   _aieHeroImg=getCurrentAiImage();
   D.business.heroImg=_aieHeroImg;
+  saveData(D);markLocalSaved();
   document.getElementById("heroImgBtn").textContent="✅ Imagen Hero asignada";
   document.getElementById("heroImgBtn").classList.add("used");
-  showNotif("✅ Imagen asignada como Hero");
+  showNotif("✅ Imagen asignada como Hero. Publicá para que se vea en línea.");
 }
 
 function addCurrentImageToGallery(){
@@ -2240,6 +2245,7 @@ function addCurrentImageToGallery(){
   const entry={id:Date.now(),emoji:"📸",img};
   D.gallery.push(entry);
   _aieGalImages.push(img);
+  saveData(D);markLocalSaved();
   renderAdminGallery();renderGallery();
   document.getElementById("galImgBtn").textContent=`✅ ${_aieGalImages.length} imagen(es) en Galería`;
   document.getElementById("galImgBtn").classList.add("used");
@@ -2342,12 +2348,12 @@ function applyAiData(){
     else{D.products.push({id:Date.now()+Math.random(),name:n,cat:"Platos Fuertes",desc:"",price:pr,status:"available",emoji:"🍽",img});newProds++;}
   });
   if(newProds>0)applied.push(`${newProds} producto(s)`);
-  saveData(D);renderAll();populateAdmin();initReveal();
+  saveData(D);markLocalSaved();renderAll();populateAdmin();initReveal();
   document.querySelectorAll(".adm-tab").forEach(t=>t.classList.remove("act"));
   document.querySelectorAll(".adm-sec").forEach(s=>s.classList.remove("act"));
   document.querySelectorAll(".adm-tab").forEach(t=>{if(t.textContent.includes("Negocio"))t.classList.add("act")});
   document.getElementById("tab-negocio").classList.add("act");
-  showNotif(applied.length?`✅ Aplicado: ${applied.join(", ")}. ¡Guardá los cambios!`:"⚠️ No se detectaron cambios");
+  showNotif(applied.length?`✅ Aplicado: ${applied.join(", ")}. Publicá para que se vea en línea.`:"⚠️ No se detectaron cambios");
 }
 
 // ═══════════════════════════════════════════════════
@@ -2412,11 +2418,13 @@ function updateSiteLink(cfg){
   sl.href=url;sl.textContent=url.replace("https://","")+" ↗";
 }
 function populateGhConfig(){
-  const cfg=loadGhConfig();if(!cfg.user)return;
-  document.getElementById("gh-user").value=cfg.user||"";
-  document.getElementById("gh-repo").value=cfg.repo||"";
-  document.getElementById("gh-branch").value=cfg.branch||"main";
-  document.getElementById("gh-token").value=cfg.token||"";
+  const cfg=loadGhConfig();
+  // Always restore saved values; if none saved, HTML default values remain (coraluna, coraluna.github.io, main)
+  if(cfg.user)document.getElementById("gh-user").value=cfg.user;
+  if(cfg.repo)document.getElementById("gh-repo").value=cfg.repo;
+  if(cfg.branch)document.getElementById("gh-branch").value=cfg.branch;
+  if(cfg.token)document.getElementById("gh-token").value=cfg.token;
+  if(!cfg.user&&!cfg.token)return; // nothing saved yet — keep HTML defaults, hide publish section
   if(cfg.user&&cfg.repo&&cfg.token){
     document.getElementById("ghPublishNote").style.display="none";
     document.getElementById("ghPublishSection").style.display="block";
@@ -2734,7 +2742,7 @@ function importData(e){
         parsed.business.heroImg=loadImg("hero")||"";
       if(!parsed.business.logoImg||parsed.business.logoImg==="__local__")
         parsed.business.logoImg=loadImg("logo")||"";
-      D=parsed;saveData(D);renderAll();populateAdmin();
+      D=parsed;saveData(D);markLocalSaved();renderAll();populateAdmin();
       showNotif("📂 Datos importados correctamente");
     }catch{showNotif("❌ Archivo inválido o formato incorrecto");}
   };
@@ -2753,7 +2761,7 @@ function resetToDefault(){
   if(w3fKey)localStorage.setItem("cl_w3f",w3fKey);
   if(version)localStorage.setItem("cl_version",version);
   D=JSON.parse(JSON.stringify(DEFAULT));
-  saveData(D);renderAll();populateAdmin();
+  saveData(D);markPublished();renderAll();populateAdmin();
   showNotif("✅ Datos restablecidos. Token GitHub y clave Web3Forms conservados.");
 }
 
