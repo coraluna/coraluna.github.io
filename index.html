@@ -785,8 +785,9 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
         </div>
         <div class="adm-row">
           <div class="adm-fld"><label>URL de Imagen "Sobre Nosotros"</label><input id="a-aboutImg" type="url" placeholder="https://..."></div>
-          <div class="adm-fld"><label>Texto "Sobre Nosotros"</label><textarea id="a-aboutText" rows="3"></textarea></div>
+          <div class="adm-fld"><label>Título "Sobre Nosotros"</label><input id="a-aboutTitle" type="text" placeholder="Cocina hecha con amor"></div>
         </div>
+        <div class="adm-fld"><label>Texto "Sobre Nosotros"</label><textarea id="a-aboutText" rows="3"></textarea></div>
         <div class="adm-note blue">🌐 <strong>Para github.io:</strong> las imágenes deben ser URLs públicas (Imgur, Google Fotos, Cloudinary). Las imágenes del Asistente Visual solo se ven en este dispositivo hasta que hagas <strong>Exportar HTML</strong>.</div>
         <div class="adm-section-title">📊 Estadísticas</div>
         <div class="adm-fld"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="a-statsAuto" onchange="toggleStatsAuto()" style="width:16px;height:16px;accent-color:var(--caramel)"> Calcular estadísticas automáticamente (productos, categorías...)</label></div>
@@ -1197,7 +1198,15 @@ function compressImage(dataUrl,maxW=800,quality=0.75){
 // ═══════════════════════════════════════════════════
 //  RENDER
 // ═══════════════════════════════════════════════════
-function renderAll(){renderBusiness();renderProducts();renderPackages();renderGallery();renderContact();renderFooter();}
+function renderAll(){
+  renderBusiness();renderProducts();renderPackages();renderGallery();renderContact();renderFooter();
+  // Hide navbar links for hidden sections
+  document.querySelectorAll('.nav-links a[href="#menu"], .nav-links a[href="#galeria"]').forEach(a=>{
+    const id=a.getAttribute("href").replace("#","");
+    const sec=document.getElementById(id);
+    if(sec)a.style.display=sec.style.display==="none"?"none":"";
+  });
+}
 
 function renderBusiness(){
   const b=D.business;
@@ -1330,7 +1339,13 @@ function productCard(p,showEmoji){
 
 function renderPackages(){
   const el=document.getElementById("menuGrid");
-  if(!D.packages.length){el.innerHTML=`<p style="color:rgba(253,245,236,.5)"></p>`;return}
+  const section=document.getElementById("menu");
+  if(!D.packages.length){
+    el.innerHTML="";
+    if(section)section.style.display="none";
+    return;
+  }
+  if(section)section.style.display="";
   el.innerHTML=D.packages.map(p=>`
     <div class="m-card">
       <span class="m-ico">${p.ico||"📦"}</span>
@@ -1342,7 +1357,13 @@ function renderPackages(){
 
 function renderGallery(){
   const el=document.getElementById("galGrid");
-  if(!D.gallery.length){el.innerHTML=``;return}
+  const section=document.getElementById("galeria");
+  if(!D.gallery.length){
+    el.innerHTML="";
+    if(section)section.style.display="none";
+    return;
+  }
+  if(section)section.style.display="";
   el.innerHTML=D.gallery.map((g,i)=>`
     <div class="gal-item" onclick="openGalleryModal(${i})">
       ${g.img?`<img src="${g.img}" alt="Galería" loading="lazy">`:`<div class="gal-ph" style="height:${i%3===0?280:180}px">${g.emoji||"📸"}</div>`}
@@ -1408,6 +1429,13 @@ function renderFooter(){
   if(c.email)items.push(`<li><a href="mailto:${c.email}">✉️ ${c.email}</a></li>`);
   if(c.location)items.push(`<li>${c.locationUrl?`<a href="${c.locationUrl}" target="_blank" rel="noopener">📍 ${c.location}</a>`:`<span>📍 ${c.location}</span>`}</li>`);
   ftc.innerHTML=items.join("");
+  // Hide footer nav links for empty sections
+  const ftLinks=document.querySelectorAll('.ft-col a[href="#menu"], .ft-col a[href="#galeria"]');
+  ftLinks.forEach(a=>{
+    const id=a.getAttribute("href").replace("#","");
+    const sec=document.getElementById(id);
+    if(sec)a.closest("li").style.display=sec.style.display==="none"?"none":"";
+  });
 }
 
 // ═══════════════════════════════════════════════════
@@ -1738,6 +1766,7 @@ function populateAdmin(){
   document.getElementById("a-showNavIcon").checked=b.showNavIcon!==false;
   document.getElementById("a-showProdEmoji").checked=b.showProdEmoji!==false;
   document.getElementById("a-aboutImg").value=b.aboutImg&&!b.aboutImg.startsWith("data:")?b.aboutImg:"";
+  document.getElementById("a-aboutTitle").value=b.aboutTitle||"";
   document.getElementById("a-aboutText").value=b.aboutText||"";
   document.getElementById("a-statsAuto").checked=b.statsAuto!==false;
   toggleStatsAuto();
@@ -1974,6 +2003,7 @@ function saveAdmin(){
   if(ai){b.aboutImg=ai;}
   else if(!b.aboutImg||!b.aboutImg.startsWith("data:")){b.aboutImg="";}
   b.aboutText=document.getElementById("a-aboutText").value;
+  b.aboutTitle=document.getElementById("a-aboutTitle").value;
   b.statsAuto=document.getElementById("a-statsAuto").checked;
   b.stats=(b.stats||[]).map((_,i)=>({num:document.getElementById(`a-stat-n-${i}`)?.value||"",lbl:document.getElementById(`a-stat-l-${i}`)?.value||""}));
   c.whatsapp=document.getElementById("a-wa").value.replace(/\D/g,"");
@@ -2898,13 +2928,19 @@ function resetToDefault(){
 
 // ── Init ──
 document.addEventListener("DOMContentLoaded",async()=>{
-  renderAll(); // includes renderFooter() which sets ftYear
+  renderAll();
   setTimeout(initReveal,100);
+  // Only try to fetch if not file:// (GitHub Pages or server)
+  if(location.protocol==="file:")return;
   try{
     const fresh=await loadData();
     const isNew=JSON.stringify(fresh)!==JSON.stringify(D);
-    if(isNew){D=fresh;renderAll();initReveal();}
-  }catch{/* stay with local data */}
+    if(isNew){
+      D=fresh;
+      renderAll();
+      initReveal();
+    }
+  }catch{/* stay with local data — offline or error */}
 });
 </script>
 </body>
