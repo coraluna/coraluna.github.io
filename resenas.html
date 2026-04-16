@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Dejá tu Reseña · Cora Luna</title>
+<meta name="description" content="Compartí tu experiencia con Cora Luna. Tu opinión ayuda a otros a descubrir nuestros platillos caseros.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;1,400&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#FDF5EC;--cream-d:#F5E4CC;--cream-dd:#EDD5B3;
+  --caramel:#C87341;--caramel-l:#E8A87C;--caramel-d:#9E5A2A;
+  --brown:#5C2E0A;--brown-d:#3D1F06;
+  --gold:#D4A017;
+  --text:#3D1F0A;--text-m:#6B4226;--text-l:#9E6840;
+  --sh:rgba(92,46,10,.13);
+  --r:16px;--r-sm:8px;--tr:.28s ease;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Nunito',sans-serif;background:var(--brown-d);color:var(--cream);min-height:100vh;display:flex;flex-direction:column}
+.top-nav{background:rgba(61,31,6,.94);backdrop-filter:blur(12px);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(212,160,23,.18)}
+.nav-brand{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--cream);text-decoration:none}
+.nav-brand em{color:var(--gold);font-style:italic}
+.nav-back{font-size:.82rem;color:var(--gold);font-weight:700;text-decoration:none;transition:opacity var(--tr)}
+.nav-back:hover{opacity:.75}
+.hero{text-align:center;padding:52px 24px 36px;background:linear-gradient(135deg,var(--brown-d) 0%,#2A1000 100%)}
+.hero-ico{font-size:3.2rem;margin-bottom:12px}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,4vw,2.6rem);color:var(--cream);margin-bottom:10px;line-height:1.2}
+.hero h1 em{color:var(--gold);font-style:italic}
+.hero p{font-family:'Lora',serif;color:rgba(253,245,236,.7);font-size:.97rem;line-height:1.7;max-width:480px;margin:0 auto}
+.card-wrap{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:32px 20px 56px}
+.card{background:var(--cream);color:var(--text);border-radius:var(--r);padding:36px 32px;width:100%;max-width:560px;box-shadow:0 12px 48px rgba(0,0,0,.4)}
+@media(max-width:500px){.card{padding:24px 18px}}
+.f-grp{margin-bottom:18px}
+.f-grp label{display:block;font-size:.82rem;font-weight:800;color:var(--text-m);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.f-grp input,.f-grp textarea{width:100%;padding:11px 14px;border:2px solid var(--cream-dd);border-radius:var(--r-sm);font-family:'Nunito',sans-serif;font-size:.95rem;color:var(--text);background:#fff;transition:border-color var(--tr);outline:none}
+.f-grp input:focus,.f-grp textarea:focus{border-color:var(--caramel)}
+.f-grp textarea{resize:vertical;min-height:110px;line-height:1.6}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:420px){.f-row{grid-template-columns:1fr}}
+.f-opt{font-size:.75rem;color:var(--text-l);font-weight:400;font-style:italic;margin-left:4px;text-transform:none;letter-spacing:0}
+.star-row{display:flex;gap:8px;margin-top:4px}
+.star-btn{font-size:1.9rem;cursor:pointer;opacity:.2;transition:opacity .15s,transform .1s;background:none;border:none;padding:0;line-height:1}
+.star-btn.on{opacity:1}
+.star-btn:hover{transform:scale(1.15);opacity:.85}
+.star-label{font-size:.84rem;color:var(--text-l);margin-top:6px;min-height:1.3em;font-style:italic}
+.btn-send{width:100%;padding:14px;background:var(--caramel);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Nunito',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;transition:background var(--tr),transform var(--tr);margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-send:hover{background:var(--caramel-d);transform:translateY(-2px)}
+.btn-send:disabled{opacity:.65;cursor:not-allowed;transform:none}
+.hint{font-size:.79rem;color:var(--text-l);line-height:1.6;margin-top:14px;text-align:center;padding:12px 14px;background:rgba(212,160,23,.07);border-radius:var(--r-sm);border:1px solid rgba(212,160,23,.22)}
+.hint strong{color:var(--caramel-d)}
+.success-box{display:none;text-align:center;padding:28px 10px}
+.success-ico{font-size:3.2rem;margin-bottom:14px}
+.success-box h2{font-family:'Playfair Display',serif;font-size:1.7rem;color:var(--caramel-d);margin-bottom:10px}
+.success-box p{font-family:'Lora',serif;font-size:.95rem;color:var(--text-m);line-height:1.7}
+.btn-back{display:inline-block;margin-top:22px;padding:11px 28px;background:var(--brown-d);color:var(--cream);border-radius:var(--r-sm);font-weight:800;font-size:.9rem;text-decoration:none;transition:opacity var(--tr)}
+.btn-back:hover{opacity:.8}
+footer{text-align:center;padding:20px;font-size:.76rem;color:rgba(253,245,236,.35);border-top:1px solid rgba(212,160,23,.1)}
+footer a{color:var(--gold);text-decoration:none}
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <a href="index.html" class="nav-brand">Cora <em>Luna</em></a>
+  <a href="index.html" class="nav-back">← Volver al sitio</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-ico">⭐</div>
+  <h1>Dejá tu <em>Reseña</em></h1>
+  <p>Tu opinión ayuda a otros a descubrir los sabores caseros de Cora Luna. ¡Gracias por compartirla!</p>
+</div>
+
+<div class="card-wrap">
+  <div class="card">
+
+    <div id="formSection">
+      <div class="f-row">
+        <div class="f-grp">
+          <label>Tu nombre *</label>
+          <input type="text" id="rName" placeholder="María González" autocomplete="name">
+        </div>
+        <div class="f-grp">
+          <label>País <span class="f-opt">(opcional)</span></label>
+          <input type="text" id="rCountry" placeholder="🇨🇷 Costa Rica">
+        </div>
+      </div>
+
+      <div class="f-grp">
+        <label>¿Qué platillo probaste? <span class="f-opt">(opcional)</span></label>
+        <input type="text" id="rPlatillo" placeholder="Ej: Flan de coco, Lasagna de carne">
+      </div>
+
+      <div class="f-grp">
+        <label>Calificación *</label>
+        <div class="star-row">
+          <button class="star-btn" onclick="setStar(1)">⭐</button>
+          <button class="star-btn" onclick="setStar(2)">⭐</button>
+          <button class="star-btn" onclick="setStar(3)">⭐</button>
+          <button class="star-btn" onclick="setStar(4)">⭐</button>
+          <button class="star-btn" onclick="setStar(5)">⭐</button>
+        </div>
+        <div class="star-label" id="starLabel">Seleccioná tu calificación</div>
+      </div>
+
+      <div class="f-grp">
+        <label>Tu reseña *</label>
+        <textarea id="rText" placeholder="Contanos tu experiencia: el sabor, la atención, lo que más te gustó de Cora Luna..."></textarea>
+      </div>
+
+      <button class="btn-send" id="sendBtn" onclick="submitReview()">
+        <span>✉️</span><span id="btnLabel">Enviar reseña por correo</span>
+      </button>
+
+      <p class="hint">
+        <strong>¿Cómo funciona?</strong> Completá el formulario y tu reseña se enviará directo a Cora Luna. Será revisada y publicada en el sitio si es aprobada.
+      </p>
+    </div>
+
+    <div class="success-box" id="successBox">
+      <div class="success-ico">🎉</div>
+      <h2>¡Gracias por tu reseña!</h2>
+      <p>Tu reseña fue enviada exitosamente. La revisaremos pronto y la publicaremos en el sitio si es aprobada. ¡Muchas gracias por tu apoyo!</p>
+      <a href="#" class="btn-back" onclick="goBackToSite();return false;">← Volver al sitio</a>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <p>© <span id="ftYear"></span> Cora Luna · <a href="index.html">Inicio</a></p>
+</footer>
+
+<script>
+// ── Stars ────────────────────────────────────────────
+let currentStar = 0;
+const starTxt = ['','Mala 😕','Regular 😐','Buena 🙂','Muy buena 😊','¡Excelente! 🤩'];
+
+function setStar(n){
+  currentStar = n;
+  document.querySelectorAll('.star-btn').forEach((b,i)=>b.classList.toggle('on',i<n));
+  document.getElementById('starLabel').textContent = starTxt[n];
+}
+
+// ── Cargar config desde data.json ──────────────────
+let coraEmail = '';
+let formspreeId = '';
+fetch('./data.json?nc='+Date.now(),{cache:'no-store'})
+  .then(r=>r.ok?r.json():null)
+  .then(d=>{
+    if(d?.contact?.email) coraEmail = d.contact.email;
+    if(d?.formspreeResenas) formspreeId = d.formspreeResenas;
+  })
+  .catch(()=>{});
+
+// ── Submit: Formspree con fallback a mailto ─────────
+async function submitReview(){
+  const name    = document.getElementById('rName').value.trim();
+  const country = document.getElementById('rCountry').value.trim();
+  const platillo = document.getElementById('rPlatillo').value.trim();
+  const text    = document.getElementById('rText').value.trim();
+
+  if(!name){   alert('Por favor ingresá tu nombre'); document.getElementById('rName').focus(); return; }
+  if(!currentStar){ alert('Por favor seleccioná una calificación'); return; }
+  if(!text){   alert('Por favor escribí tu reseña'); document.getElementById('rText').focus(); return; }
+
+  const stars = '⭐'.repeat(currentStar);
+  const btn = document.getElementById('sendBtn');
+  const origLabel = document.getElementById('btnLabel').textContent;
+
+  if(formspreeId){
+    btn.disabled = true;
+    document.getElementById('btnLabel').textContent = 'Enviando...';
+    try{
+      const res = await fetch('https://formspree.io/f/'+formspreeId,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body: JSON.stringify({
+          _subject: 'Nueva Reseña — Cora Luna' + (platillo?' — '+platillo:''),
+          nombre: name,
+          pais: country||'(no indicado)',
+          platillo: platillo||'(no indicado)',
+          calificacion: stars+' ('+currentStar+'/5)',
+          resena: text
+        })
+      });
+      const data = await res.json();
+      if(data.ok||res.ok){
+        showSuccess();
+      }else{
+        throw new Error(data.error||'Error al enviar');
+      }
+    }catch(e){
+      alert('No se pudo enviar: '+e.message+'. Intentá nuevamente.');
+    }finally{
+      btn.disabled = false;
+      document.getElementById('btnLabel').textContent = origLabel;
+    }
+  }else{
+    // ── Fallback mailto si Formspree no está configurado ──
+    const bodyLines = [
+      'Nombre: '        + name,
+      country   ? 'País: '      + country   : '',
+      platillo  ? 'Platillo: '  + platillo  : '',
+      'Calificación: '  + stars + ' ('+currentStar+'/5)',
+      '','Reseña:',text,'',
+      '---','Enviado desde resenas.html · Cora Luna'
+    ].filter(Boolean).join('\n');
+    const subject = encodeURIComponent('Nueva Reseña — Cora Luna'+(platillo?' — '+platillo:''));
+    window.location.href='mailto:'+coraEmail+'?subject='+subject+'&body='+encodeURIComponent(bodyLines);
+    setTimeout(showSuccess, 900);
+  }
+}
+
+function showSuccess(){
+  document.getElementById('formSection').style.display = 'none';
+  document.getElementById('successBox').style.display  = 'block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function goBackToSite(){
+  if(window.opener && !window.opener.closed){
+    window.opener.focus();
+    window.close();
+  }else{
+    window.location.href='index.html';
+  }
+}
+
+document.getElementById('ftYear').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
