@@ -267,6 +267,28 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
 .gh-pub-card>p{font-family:'Lora',serif;font-size:.8rem;color:var(--text-m);line-height:1.55}
 @media(max-width:560px){.gh-pub-actions{grid-template-columns:1fr}}
 
+/* ── RESEÑAS ── */
+#resenas{padding:80px 24px;background:var(--cream-d)}
+.res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px;margin-bottom:40px}
+.res-card{background:#fff;border:1px solid var(--cream-dd);border-radius:var(--r);padding:26px 22px;box-shadow:0 2px 12px var(--sh);transition:transform var(--tr),box-shadow var(--tr)}
+.res-card:hover{transform:translateY(-4px);box-shadow:0 8px 28px var(--sh2)}
+.res-stars{font-size:1.1rem;letter-spacing:2px;margin-bottom:10px}
+.res-text{font-family:'Lora',serif;font-size:.93rem;color:var(--text-m);line-height:1.7;margin-bottom:16px;font-style:italic}
+.res-footer{display:flex;align-items:center;gap:12px}
+.res-avatar{width:38px;height:38px;border-radius:50%;background:var(--caramel);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;flex-shrink:0}
+.res-meta{flex:1;min-width:0}
+.res-name{font-weight:800;font-size:.87rem;color:var(--brown-d)}
+.res-platillo{font-size:.77rem;color:var(--text-l);margin-top:2px}
+.res-date{font-size:.76rem;color:var(--text-l);white-space:nowrap;margin-left:auto;align-self:flex-start}
+.res-empty{text-align:center;padding:48px 20px;color:var(--text-l);font-style:italic;grid-column:1/-1}
+.adm-res-card{background:var(--cream);border:1px solid var(--cream-dd);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.adm-res-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+.adm-res-meta{font-size:.78rem;color:var(--text-l);font-weight:400}
+.adm-res-text{font-size:.84rem;color:var(--text-m);font-style:italic;line-height:1.5}
+.res-star-picker{display:flex;gap:6px;font-size:1.5rem;cursor:pointer;margin:8px 0}
+.res-star-picker span{opacity:.3;transition:opacity .15s;user-select:none}
+.res-star-picker span.on{opacity:1}
+
 /* ── WA FLOAT ── */
 .wa-float{position:fixed;bottom:26px;right:26px;z-index:700;width:58px;height:58px;background:var(--wa);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 5px 22px rgba(37,211,102,.5);text-decoration:none;transition:all var(--tr);animation:wa-pulse 2.5s infinite}
 .wa-float:hover{background:var(--wa-d);transform:scale(1.1)}
@@ -562,6 +584,21 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
   </div>
 </section>
 
+<!-- RESEÑAS -->
+<section id="resenas">
+  <div class="container">
+    <div class="sec-hd c reveal">
+      <span class="sec-lbl">Reseñas</span>
+      <h2 class="sec-h2">Lo que dicen <br>nuestros clientes</h2>
+      <p class="sec-sub">Experiencias reales de personas que han disfrutado los sabores de Cora Luna.</p>
+    </div>
+    <div class="res-grid reveal" id="resGrid"></div>
+    <div class="menu-cta reveal">
+      <a href="resenas.html" target="_blank" class="btn-lt">⭐ Dejar mi reseña</a>
+    </div>
+  </div>
+</section>
+
 <!-- CONTACT -->
 <section id="contacto">
   <div class="container">
@@ -614,6 +651,7 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
         <li><a href="#productos">Productos</a></li>
         <li><a href="#menu">Paquetes Semanales</a></li>
         <li><a href="#galeria">Galería</a></li>
+        <li><a href="#resenas">Reseñas</a></li>
         <li><a href="#nosotros">Nosotros</a></li>
       </ul>
     </div>
@@ -665,6 +703,7 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
       <button class="adm-tab" onclick="switchTab('productos',this)">🍽 Productos</button>
       <button class="adm-tab" onclick="switchTab('paquetes',this)">📦 Paquetes</button>
       <button class="adm-tab" onclick="switchTab('galeria',this)">📸 Galería</button>
+      <button class="adm-tab" onclick="switchTab('resenas',this)">⭐ Reseñas</button>
       <button class="adm-tab" onclick="switchTab('contacto',this)">📞 Contacto</button>
       <button class="adm-tab" onclick="switchTab('publicar',this)">🚀 Publicar</button>
       <button class="adm-tab" onclick="switchTab('ajustes',this)">⚙️ Ajustes</button>
@@ -822,6 +861,35 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
         <div id="a-gal-urls-list" style="margin-top:14px"></div>
       </div>
 
+      <!-- RESEÑAS -->
+      <div class="adm-sec" id="tab-resenas">
+        <div class="adm-note">💡 Las reseñas publicadas aquí se muestran en la sección "Reseñas" de la página. Los clientes envían su reseña vía <strong>resenas.html</strong> → te llega por correo → vos la revisás y la agregás aquí si la aprobás.</div>
+        <div id="a-res-list"></div>
+        <div style="border:1px solid var(--cream-dd);border-radius:var(--r);padding:20px;margin-top:8px;background:var(--cream)">
+          <div class="adm-section-title" style="margin-bottom:14px">➕ Agregar Reseña Aprobada</div>
+          <div class="adm-row">
+            <div class="adm-fld"><label>Nombre del cliente *</label><input id="ar-name" type="text" placeholder="Ej: María González"></div>
+            <div class="adm-fld"><label>País / Origen <small style="font-weight:400;color:var(--text-l)">(opcional)</small></label><input id="ar-country" type="text" placeholder="Ej: 🇺🇸 Estados Unidos"></div>
+          </div>
+          <div class="adm-fld"><label>Platillo o producto probado <small style="font-weight:400;color:var(--text-l)">(opcional)</small></label><input id="ar-platillo" type="text" placeholder="Ej: Flan de coco, Lasagna de carne"></div>
+          <div class="adm-fld">
+            <label>Calificación *</label>
+            <div class="res-star-picker" id="arStarPicker">
+              <span onclick="setResStar(1)">⭐</span>
+              <span onclick="setResStar(2)">⭐</span>
+              <span onclick="setResStar(3)">⭐</span>
+              <span onclick="setResStar(4)">⭐</span>
+              <span onclick="setResStar(5)">⭐</span>
+            </div>
+          </div>
+          <div class="adm-fld"><label>Reseña *</label><textarea id="ar-text" rows="3" placeholder="Texto de la reseña tal como la envió el cliente..."></textarea></div>
+          <div class="adm-row">
+            <div class="adm-fld"><label>Fecha <small style="font-weight:400;color:var(--text-l)">(mes/año)</small></label><input id="ar-date" type="text" placeholder="Ej: Abril 2025"></div>
+          </div>
+          <button class="btn-pr" onclick="addReview()" style="margin-top:8px">✅ Publicar Reseña</button>
+        </div>
+      </div>
+
       <!-- CONTACTO -->
       <div class="adm-sec" id="tab-contacto">
         <div class="adm-section-title">📞 Datos de Contacto</div>
@@ -852,6 +920,16 @@ code{background:rgba(200,115,65,.1);padding:2px 6px;border-radius:4px;font-size:
           </div>
         </div>
         <div id="w3fTestResult" style="font-size:.82rem;margin-top:-8px;margin-bottom:8px"></div>
+        <div class="adm-fld">
+          <label>Formspree ID — Formulario de Pedidos <small style="color:var(--text-l);font-weight:400">(se guarda en data.json · se obtiene en formspree.io)</small></label>
+          <input id="a-formspreePedidos" type="text" placeholder="Ej: xpwznjpq" autocomplete="off">
+          <p style="font-size:.75rem;color:var(--text-l);margin-top:4px">💡 Creá un formulario llamado "Cora Luna — Pedidos" en formspree.io y pegá el ID que aparece en la sección Integration. Se usa cuando el cliente elige enviar por correo.</p>
+        </div>
+        <div class="adm-fld">
+          <label>Formspree ID — Formulario de Reseñas <small style="color:var(--text-l);font-weight:400">(para resenas.html · se guarda en data.json)</small></label>
+          <input id="a-formspreeResenas" type="text" placeholder="Ej: abcd1234" autocomplete="off">
+          <p style="font-size:.75rem;color:var(--text-l);margin-top:4px">💡 Creá un segundo formulario llamado "Cora Luna — Reseñas" en formspree.io y pegá su ID aquí.</p>
+        </div>
 
         <div class="adm-section-title">🕐 Horario de Atención</div>
         <div class="adm-note">💡 Activá los días que atendés y ponés el horario de apertura y cierre.</div>
@@ -1028,6 +1106,9 @@ const DEFAULT={
   products:[],
   packages:[],
   gallery:[],
+  reviews:[],
+  formspreeResenas:"",
+  formspreePedidos:"",
   adminPw:"a2d1f6e919add44ceca19442cb59ddb17e799751adb27ddc6c69af6ae9c036ff"
 };
 
@@ -1203,7 +1284,7 @@ function compressImage(dataUrl,maxW=800,quality=0.75){
 //  RENDER
 // ═══════════════════════════════════════════════════
 function renderAll(){
-  renderBusiness();renderProducts();renderPackages();renderGallery();renderContact();renderFooter();
+  renderBusiness();renderProducts();renderPackages();renderGallery();renderReviews();renderContact();renderFooter();
   // Hide navbar links for hidden sections
   document.querySelectorAll('.nav-links a[href="#menu"], .nav-links a[href="#galeria"]').forEach(a=>{
     const id=a.getAttribute("href").replace("#","");
@@ -1402,6 +1483,86 @@ function formatSchedule(sched){
   }).join("  ·  ");
 }
 
+// ── RESEÑAS públicas ──────────────────────────────
+function renderReviews(){
+  const grid=document.getElementById("resGrid");
+  if(!grid)return;
+  const reviews=(D.reviews||[]);
+  if(!reviews.length){
+    grid.innerHTML=`<p class="res-empty">Aún no hay reseñas publicadas. ¡Sé la primera persona en compartir tu experiencia!</p>`;
+    return;
+  }
+  grid.innerHTML=reviews.map(r=>{
+    const stars="⭐".repeat(Math.min(5,Math.max(1,r.rating||5)));
+    const initial=(r.name||"?")[0].toUpperCase();
+    return `<div class="res-card reveal">
+      <div class="res-stars">${stars}</div>
+      <p class="res-text">${esc(r.text||"")}</p>
+      <div class="res-footer">
+        <div class="res-avatar">${initial}</div>
+        <div class="res-meta">
+          <div class="res-name">${esc(r.name||"")}${r.country?` <span style="font-weight:400;font-size:.75rem;color:var(--text-l)">${esc(r.country)}</span>`:""}</div>
+          ${r.platillo?`<div class="res-platillo">🍽 ${esc(r.platillo)}</div>`:""}
+        </div>
+        ${r.date?`<div class="res-date">${esc(r.date)}</div>`:""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ── RESEÑAS admin ─────────────────────────────────
+let _resStar=5;
+function setResStar(n){
+  _resStar=n;
+  document.querySelectorAll("#arStarPicker span").forEach((s,i)=>s.classList.toggle("on",i<n));
+}
+function renderAdminReviews(){
+  if(!D.reviews)D.reviews=[];
+  const list=document.getElementById("a-res-list");
+  if(!list)return;
+  if(!D.reviews.length){
+    list.innerHTML=`<p style="color:var(--text-l);font-style:italic;font-size:.85rem;margin-bottom:16px">Aún no hay reseñas publicadas.</p>`;
+    return;
+  }
+  list.innerHTML=D.reviews.map((r,i)=>`
+    <div class="adm-res-card">
+      <div class="adm-res-top">
+        <div>
+          <strong style="font-size:.9rem">${esc(r.name||"")}</strong>
+          <span class="adm-res-meta"> · ${"⭐".repeat(r.rating||5)} · ${esc(r.date||"")}${r.country?" · "+esc(r.country):""}</span>
+          ${r.platillo?`<div class="adm-res-meta">🍽 ${esc(r.platillo)}</div>`:""}
+        </div>
+        <button onclick="deleteReview(${i})" style="background:#dc3545;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:.78rem;cursor:pointer;flex-shrink:0">🗑 Eliminar</button>
+      </div>
+      <div class="adm-res-text">"${esc(r.text||"")}"</div>
+    </div>`).join("");
+}
+function addReview(){
+  const name=document.getElementById("ar-name").value.trim();
+  const text=document.getElementById("ar-text").value.trim();
+  const platillo=document.getElementById("ar-platillo").value.trim();
+  const country=document.getElementById("ar-country").value.trim();
+  const date=document.getElementById("ar-date").value.trim();
+  if(!name||!text){showNotif("⚠️ Nombre y reseña son obligatorios");return;}
+  if(!D.reviews)D.reviews=[];
+  D.reviews.unshift({id:Date.now(),name,platillo,country,rating:_resStar,text,date});
+  saveData(D);markLocalSaved();
+  document.getElementById("ar-name").value="";
+  document.getElementById("ar-text").value="";
+  document.getElementById("ar-platillo").value="";
+  document.getElementById("ar-country").value="";
+  document.getElementById("ar-date").value="";
+  setResStar(5);
+  renderAdminReviews();renderReviews();
+  showNotif("✅ Reseña publicada. Acordate de publicar en GitHub para que aparezca en la web.");
+}
+function deleteReview(i){
+  if(!confirm("¿Eliminar esta reseña?"))return;
+  D.reviews.splice(i,1);
+  saveData(D);markLocalSaved();
+  renderAdminReviews();renderReviews();
+}
+
 function renderContact(){
   const c=D.contact;
   const wa=c.whatsapp||"50600000000";
@@ -1598,7 +1759,38 @@ async function sendFormMessage(){
     ].filter(Boolean).join("\n");
     window.open(`https://wa.me/${D.contact.whatsapp}?text=${encodeURIComponent(text)}`,"_blank");
   }else{
-    await sendEmailW3F({name,phone,prodLines,msg,picked});
+    const fsId=(D.formspreePedidos||"").trim();
+    if(fsId){
+      // ── Formspree: funciona en desktop y móvil sin configuración del cliente ──
+      const btn=document.getElementById("fSendBtn");
+      const origTxt=btn.textContent;
+      btn.disabled=true;btn.textContent="✉️ Enviando...";
+      try{
+        const res=await fetch(`https://formspree.io/f/${fsId}`,{
+          method:"POST",
+          headers:{"Content-Type":"application/json","Accept":"application/json"},
+          body:JSON.stringify({
+            _subject:`Pedido — ${name}`,
+            nombre:name,
+            telefono:phone||"(no indicado)",
+            productos:prodLines||"(ninguno seleccionado)",
+            mensaje:msg||"(sin mensaje)"
+          })
+        });
+        const data=await res.json();
+        if(data.ok||res.ok){
+          showNotif("✅ ¡Mensaje enviado! Te responderemos pronto.");
+          document.getElementById("fName").value="";
+          document.getElementById("fPhone").value="";
+          document.getElementById("fMsg").value="";
+          document.querySelectorAll("#fProductPicker .f-pick-cb:checked").forEach(cb=>{cb.checked=false;togglePickItem(cb);});
+        }else{throw new Error(data.error||"Error al enviar");}
+      }catch(e){
+        showNotif("❌ No se pudo enviar: "+e.message+". Intentá por WhatsApp.");
+      }finally{btn.disabled=false;btn.textContent=origTxt;}
+    }else{
+      await sendEmailW3F({name,phone,prodLines,msg,picked});
+    }
   }
 }
 function scrollToSec(id){document.querySelector(id)?.scrollIntoView({behavior:"smooth"})}
@@ -1757,6 +1949,7 @@ function switchTab(name,btn){
   document.querySelectorAll(".adm-tab").forEach(t=>t.classList.remove("act"));
   document.getElementById("tab-"+name).classList.add("act");
   btn.classList.add("act");
+  if(name==="resenas"){setResStar(5);renderAdminReviews();}
 }
 
 function populateAdmin(){
@@ -1781,10 +1974,14 @@ function populateAdmin(){
   document.getElementById("a-locationUrl").value=c.locationUrl||"";
   // W3F key is device-only, never in D
   document.getElementById("a-w3fKey").value=localStorage.getItem("cl_w3f")||"";
+  // Formspree IDs — stored in data.json (public by design, they're form endpoints)
+  document.getElementById("a-formspreePedidos").value=D.formspreePedidos||"";
+  document.getElementById("a-formspreeResenas").value=D.formspreeResenas||"";
   renderAdminSchedule();
   renderAdminProducts();
   renderAdminPackages();
   renderAdminGallery();
+  renderAdminReviews();
   renderAdminStats();
   populateGhConfig();
   document.getElementById("a-pwCurrent").value="";
@@ -2018,6 +2215,9 @@ function saveAdmin(){
   // W3F key — device-only, never goes to data.json
   const w3fKey=document.getElementById("a-w3fKey").value.trim();
   if(w3fKey)localStorage.setItem("cl_w3f",w3fKey);
+  // Formspree IDs go to data.json (public by design — they're form endpoints)
+  D.formspreePedidos=document.getElementById("a-formspreePedidos").value.trim();
+  D.formspreeResenas=document.getElementById("a-formspreeResenas").value.trim();
   // Schedule
   c.schedule={};
   Object.keys(DAYS_ES).forEach(k=>{
