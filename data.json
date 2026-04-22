@@ -98,13 +98,13 @@
     },
     {
       "id": 3,
-      "name": "Lasagna",
+      "name": "Lasagna de Pollo - 8 porciones",
       "cat": "Platos Fuertes",
-      "desc": "Capas generosas de pasta, carne molida, salsa bolognesa casera y queso gratinado al horno. ¡Un clásico irresistible!",
-      "price": "",
+      "desc": "Capas suaves de pasta rellenas de pollo sazonado y una mezcla cremosa, cubierta con queso gratinado dorado que se derrite en cada bocado. Una opción reconfortante, perfecta para disfrutar como hecha en casa.",
+      "price": "₡18,000",
       "status": "available",
       "emoji": "🍝",
-      "img": ""
+      "img": "https://i.imgur.com/dZVrxLN.png"
     },
     {
       "id": 4,
