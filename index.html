@@ -171,8 +171,9 @@ section{padding:80px 28px}
 #galeria{background:#fff}
 .gal-masonry{columns:3 220px;column-gap:14px}
 .gal-item{break-inside:avoid;margin-bottom:14px;border-radius:var(--r);overflow:hidden;background:var(--cream-d);cursor:pointer;position:relative}
-.gal-item img{width:100%;display:block;transition:transform .4s ease}
-.gal-item:hover img{transform:scale(1.04)}
+.gal-item img,.gal-item video{width:100%;display:block;transition:transform .4s ease}
+.gal-item:hover img,.gal-item:hover video{transform:scale(1.04)}
+.gal-item video{object-fit:cover;max-height:320px}
 .gal-ph{width:100%;height:200px;display:flex;align-items:center;justify-content:center;font-size:44px;background:linear-gradient(145deg,var(--cream-d),var(--rose))}
 .gal-overlay{position:absolute;inset:0;background:rgba(61,31,6,0);transition:background var(--tr);display:flex;align-items:center;justify-content:center}
 .gal-item:hover .gal-overlay{background:rgba(61,31,6,.32)}
@@ -1449,11 +1450,21 @@ function renderGallery(){
     return;
   }
   if(section)section.style.display="";
-  el.innerHTML=D.gallery.map((g,i)=>`
-    <div class="gal-item" onclick="openGalleryModal(${i})">
-      ${g.img?`<img src="${g.img}" alt="Galería" loading="lazy">`:`<div class="gal-ph" style="height:${i%3===0?280:180}px">${g.emoji||"📸"}</div>`}
-      <div class="gal-overlay"><span>🔍</span></div>
-    </div>`).join("");
+  el.innerHTML=D.gallery.map((g,i)=>{
+    const isVideo=g.img&&/\.mp4(\?.*)?$/i.test(g.img);
+    let media="";
+    if(g.img){
+      media=isVideo
+        ?`<video src="${g.img}" muted autoplay loop playsinline style="width:100%;display:block;object-fit:cover;max-height:320px"></video>`
+        :`<img src="${g.img}" alt="Galería" loading="lazy">`;
+    }else{
+      media=`<div class="gal-ph" style="height:${i%3===0?280:180}px">${g.emoji||"📸"}</div>`;
+    }
+    return `<div class="gal-item" onclick="openGalleryModal(${i})">
+      ${media}
+      <div class="gal-overlay"><span>${isVideo?"▶":"🔍"}</span></div>
+    </div>`;
+  }).join("");
 }
 
 function formatSchedule(sched){
@@ -1645,9 +1656,11 @@ function openGalleryModal(idx){
   const g=D.gallery[idx];
   if(!g||!g.img){return;}
   const modal=document.getElementById("prodModal");
-  document.getElementById("prodModalContent").innerHTML=`
-    <img style="width:100%;max-height:85vh;object-fit:contain;border-radius:16px;display:block" src="${g.img.replace(/"/g,'&quot;')}" alt="Galería">`;
-  // The close button is already in the modal box, no need to add a second one
+  const src=g.img.replace(/"/g,'&quot;');
+  const isVideo=/\.mp4(\?.*)?$/i.test(g.img);
+  document.getElementById("prodModalContent").innerHTML=isVideo
+    ?`<video src="${src}" controls autoplay loop playsinline style="width:100%;max-height:85vh;border-radius:16px;display:block;background:#000"></video>`
+    :`<img style="width:100%;max-height:85vh;object-fit:contain;border-radius:16px;display:block" src="${src}" alt="Galería">`;
   modal.classList.add("open");
   document.body.style.overflow="hidden";
 }
