@@ -88,12 +88,12 @@
     },
     {
       "id": 2,
-      "name": "Flan Napolitano",
+      "name": "Flan de Coco - 1 porción",
       "cat": "Postres",
-      "desc": "El clásico flan napolitano con queso crema, leche condensada y una capa perfecta de caramelo. Suave y delicioso.",
-      "price": "",
+      "desc": "Una porción de nuestro flan estrella: cremoso y suave con el delicioso sabor del coco fresco. Bañado en caramelo dorado y decorado con coco rallado.",
+      "price": "₡2,500",
       "status": "available",
-      "emoji": "🍮",
+      "emoji": "🥥",
       "img": ""
     },
     {
